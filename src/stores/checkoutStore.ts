@@ -4,6 +4,55 @@ import type { CheckoutComponent, CheckoutTemplate, BackgroundConfig, ThemeConfig
 import { generateId } from '@/lib/utils'
 import { CHECKOUT_COMPONENTS } from '@/lib/constants'
 
+/** Clona com novos ids em todos os níveis (grids aninhados). */
+function cloneComponentDeep(component: CheckoutComponent): CheckoutComponent {
+  return {
+    ...component,
+    id: generateId(),
+    props: JSON.parse(JSON.stringify(component.props)),
+    children: component.children?.map(cloneComponentDeep),
+  }
+}
+
+/** Aplica updater nos children do componente com parentId, em qualquer profundidade. */
+function updateChildrenDeep(
+  components: CheckoutComponent[],
+  parentId: string,
+  updater: (children: CheckoutComponent[]) => CheckoutComponent[],
+): { components: CheckoutComponent[]; found: boolean } {
+  let found = false
+  const next = components.map((c) => {
+    if (c.id === parentId) {
+      found = true
+      return { ...c, children: updater([...(c.children || [])]) }
+    }
+    if (c.children && c.children.length > 0) {
+      const nested = updateChildrenDeep(c.children, parentId, updater)
+      if (nested.found) {
+        found = true
+        return { ...c, children: nested.components }
+      }
+    }
+    return c
+  })
+  return { components: next, found }
+}
+
+/** Busca componente por id em qualquer profundidade. */
+function findComponentDeep(
+  components: CheckoutComponent[],
+  id: string,
+): CheckoutComponent | undefined {
+  for (const c of components) {
+    if (c.id === id) return c
+    if (c.children) {
+      const found = findComponentDeep(c.children, id)
+      if (found) return found
+    }
+  }
+  return undefined
+}
+
 interface CheckoutState {
   templates: CheckoutTemplate[]
   currentTemplate: CheckoutTemplate | null
@@ -98,6 +147,7 @@ export const useCheckoutStore = create<CheckoutState>()(
           gridColumns: config?.gridColumns,
           children: config?.isGrid ? [] : undefined,
           placement,
+          fullWidth: true,
         }
 
         const updatedComponents = [...currentTemplate.components, component]
@@ -115,16 +165,19 @@ export const useCheckoutStore = create<CheckoutState>()(
           type,
           props: config?.defaultProps ? JSON.parse(JSON.stringify(config.defaultProps)) : {},
           order: cellIndex,
+          gridColumns: config?.gridColumns,
+          children: config?.isGrid ? [] : undefined,
         }
 
-        const updatedComponents = currentTemplate.components.map((c) => {
-          if (c.id === parentId) {
-            const children = [...(c.children || [])]
+        const { components: updatedComponents, found } = updateChildrenDeep(
+          currentTemplate.components,
+          parentId,
+          (children) => {
             children[cellIndex] = newComponent
-            return { ...c, children }
-          }
-          return c
-        })
+            return children
+          },
+        )
+        if (!found) return
 
         get().updateTemplate(currentTemplate.id, { components: updatedComponents })
         // Sem auto-seleção: o modal de propriedades abre só no clique.
@@ -134,18 +187,19 @@ export const useCheckoutStore = create<CheckoutState>()(
         const { currentTemplate, selectedComponentId } = get()
         if (!currentTemplate) return
 
-        const parentComponent = currentTemplate.components.find((c) => c.id === parentId)
+        const parentComponent = findComponentDeep(currentTemplate.components, parentId)
         if (!parentComponent || !parentComponent.children) return
 
         const removedChild = parentComponent.children[cellIndex]
-        const updatedComponents = currentTemplate.components.map((c) => {
-          if (c.id === parentId) {
-            const children = [...(c.children || [])]
+        const { components: updatedComponents, found } = updateChildrenDeep(
+          currentTemplate.components,
+          parentId,
+          (children) => {
             children[cellIndex] = undefined as unknown as CheckoutComponent
-            return { ...c, children: children.filter(Boolean) }
-          }
-          return c
-        })
+            return children.filter(Boolean)
+          },
+        )
+        if (!found) return
 
         get().updateTemplate(currentTemplate.id, { components: updatedComponents })
 
@@ -167,14 +221,9 @@ export const useCheckoutStore = create<CheckoutState>()(
           props: JSON.parse(JSON.stringify(sourceComponent.props)),
           order: currentTemplate.components.length,
           placement: sourceComponent.placement ?? 'below',
+          fullWidth: sourceComponent.fullWidth ?? true,
           gridColumns: sourceComponent.gridColumns,
-          children: sourceComponent.children
-            ? sourceComponent.children.map((child) => ({
-                ...child,
-                id: generateId(),
-                props: JSON.parse(JSON.stringify(child.props)),
-              }))
-            : undefined,
+          children: sourceComponent.children?.map(cloneComponentDeep),
         }
 
         const updatedComponents = [...currentTemplate.components, duplicatedComponent]

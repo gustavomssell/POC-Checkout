@@ -50,14 +50,14 @@ export function CheckoutRenderer({ components, background, theme, productName, m
   return (
     <ThemeProvider theme={theme}>
       <BackgroundRenderer background={background}>
-        <div className={`${hasCustomBackground ? '' : 'bg-[#1a1a2e]'} ${isMobile ? 'p-3' : 'p-4 md:p-6'}`}>
+        <div className={`${hasCustomBackground ? '' : 'bg-[#0b0e0e]'} ${isMobile ? 'p-3' : 'p-4 md:p-6'}`}>
           <div className={isMobile ? 'flex flex-col gap-4' : 'grid grid-cols-6 gap-4 max-w-6xl mx-auto'}>
             {/* Form Area */}
             <div className={isMobile ? 'w-full' : 'col-span-4'}>
               <div className="bg-[var(--theme-form-background)] rounded-2xl overflow-hidden">
                 <div className="p-5 w-full flex flex-col gap-3">
                   {aboveComponents.map((component) => (
-                    <ComponentRenderer key={component.id} component={component} />
+                    <PlacedComponent key={component.id} component={component} />
                   ))}
 
                   {/* Conteúdo padrão: sempre visível, igual ao builder */}
@@ -74,7 +74,7 @@ export function CheckoutRenderer({ components, background, theme, productName, m
                     <>
                       <div className="w-full border-t border-dashed border-gray-200 my-4" />
                       {belowComponents.map((component) => (
-                        <ComponentRenderer key={component.id} component={component} />
+                        <PlacedComponent key={component.id} component={component} />
                       ))}
                     </>
                   )}
@@ -90,7 +90,7 @@ export function CheckoutRenderer({ components, background, theme, productName, m
                   productPrice={resolvedProductPrice}
                 />
                 {sidebarComponents.map((component) => (
-                  <ComponentRenderer key={component.id} component={component} />
+                  <PlacedComponent key={component.id} component={component} />
                 ))}
               </div>
             </div>
@@ -99,6 +99,18 @@ export function CheckoutRenderer({ components, background, theme, productName, m
       </BackgroundRenderer>
     </ThemeProvider>
   )
+}
+
+/** Aplica a largura configurada (faixa estreita centralizada ou total). */
+function PlacedComponent({ component }: { component: CheckoutComponent }) {
+  if (component.fullWidth === false) {
+    return (
+      <div className="max-w-md mx-auto">
+        <ComponentRenderer component={component} />
+      </div>
+    )
+  }
+  return <ComponentRenderer component={component} />
 }
 
 function ComponentRenderer({ component }: { component: CheckoutComponent }) {

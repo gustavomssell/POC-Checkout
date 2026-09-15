@@ -33,6 +33,38 @@ interface CheckoutEditorProps {
   onBack?: () => void
 }
 
+export interface ActiveDrag {
+  id: string
+  componentType?: ComponentType
+  component?: CheckoutComponent
+}
+
+/**
+ * Resolve o componente exibido no overlay durante o arrasto, qualquer que
+ * seja a origem: item do canvas (busca na lista), item aninhado (vem nos
+ * dados do drag) ou item da paleta (montado com os defaults do catálogo).
+ */
+export function resolveOverlayComponent(
+  activeDrag: ActiveDrag | null,
+  components: CheckoutComponent[],
+): CheckoutComponent | null {
+  if (!activeDrag) return null
+  if (activeDrag.component) return activeDrag.component
+  if (activeDrag.componentType) {
+    const config = CHECKOUT_COMPONENTS.find((c) => c.type === activeDrag.componentType)
+    if (!config) return null
+    return {
+      id: `preview-${config.type}`,
+      type: config.type,
+      props: JSON.parse(JSON.stringify(config.defaultProps)),
+      order: 0,
+      gridColumns: config.gridColumns,
+      children: config.isGrid ? [] : undefined,
+    }
+  }
+  return components.find((c) => c.id === activeDrag.id) ?? null
+}
+
 export function CheckoutEditor({ onBack }: CheckoutEditorProps) {
   const {
     currentTemplate,
@@ -45,7 +77,7 @@ export function CheckoutEditor({ onBack }: CheckoutEditorProps) {
   } = useCheckoutStore()
   const { addToast } = useToast()
 
-  const [activeId, setActiveId] = useState<string | null>(null)
+  const [activeDrag, setActiveDrag] = useState<ActiveDrag | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isPaletteOpen, setIsPaletteOpen] = useState(false)
   const [isBackgroundOpen, setIsBackgroundOpen] = useState(false)
@@ -72,13 +104,20 @@ export function CheckoutEditor({ onBack }: CheckoutEditorProps) {
   )
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
-    setActiveId(event.active.id as string)
+    const data = event.active.data.current as
+      | { componentType?: ComponentType; component?: CheckoutComponent }
+      | undefined
+    setActiveDrag({
+      id: event.active.id as string,
+      componentType: data?.componentType,
+      component: data?.component,
+    })
   }, [])
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event
-      setActiveId(null)
+      setActiveDrag(null)
 
       if (!over) return
 
@@ -199,12 +238,13 @@ export function CheckoutEditor({ onBack }: CheckoutEditorProps) {
     [addComponent, addComponentToCell, removeComponentFromCell, reorderZone, moveComponentToZone, currentTemplate]
   )
 
-  const activeComponent = activeId
-    ? currentTemplate?.components.find((c) => c.id === activeId)
-    : null
+  const overlayComponent = resolveOverlayComponent(
+    activeDrag,
+    currentTemplate?.components ?? [],
+  )
 
-  const activeConfig = activeComponent
-    ? CHECKOUT_COMPONENTS.find((c) => c.type === activeComponent.type)
+  const overlayConfig = overlayComponent
+    ? CHECKOUT_COMPONENTS.find((c) => c.type === overlayComponent.type)
     : null
 
   // Handle component selection - opens the properties dialog
@@ -217,17 +257,17 @@ export function CheckoutEditor({ onBack }: CheckoutEditorProps) {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-background dark:bg-[#1a1a2e]">
+    <div className="h-screen flex flex-col bg-background dark:bg-[#0b0e0e]">
       {/* Header */}
-      <header className="h-14 border-b border-border dark:border-gray-700 bg-card dark:bg-[#1a1a2e] flex items-center px-2 md:px-4 gap-2 md:gap-4 sticky top-0 z-40">
-        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-foreground dark:text-white hover:bg-muted dark:hover:bg-gray-700" onClick={onBack}>
+      <header className="h-14 border-b border-border dark:border-white/10 bg-card dark:bg-[#0b0e0e] flex items-center px-2 md:px-4 gap-2 md:gap-4 sticky top-0 z-40">
+        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-foreground dark:text-white hover:bg-muted dark:hover:bg-white/10" onClick={onBack}>
           <ArrowLeft className="w-4 h-4" />
         </Button>
-        <Separator orientation="vertical" className="h-6 hidden sm:block bg-border dark:bg-gray-600" />
+        <Separator orientation="vertical" className="h-6 hidden sm:block bg-border dark:bg-white/10" />
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 flex-shrink-0 text-foreground dark:text-white hover:bg-muted dark:hover:bg-gray-700"
+          className="h-8 w-8 flex-shrink-0 text-foreground dark:text-white hover:bg-muted dark:hover:bg-white/10"
           onClick={() => setIsPaletteOpen(!isPaletteOpen)}
         >
           {isPaletteOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeft className="w-4 h-4" />}
@@ -245,13 +285,13 @@ export function CheckoutEditor({ onBack }: CheckoutEditorProps) {
           <Button
             variant={isBackgroundOpen ? 'secondary' : 'ghost'}
             size="icon"
-            className="h-8 w-8 hidden lg:flex text-foreground dark:text-white hover:bg-muted dark:hover:bg-gray-700"
+            className="h-8 w-8 hidden lg:flex text-foreground dark:text-white hover:bg-muted dark:hover:bg-white/10"
             onClick={() => setIsBackgroundOpen(!isBackgroundOpen)}
           >
             <Palette className="w-4 h-4" />
           </Button>
-          <Separator orientation="vertical" className="h-6 hidden sm:block bg-border dark:bg-gray-600" />
-          <Button variant="outline" size="sm" onClick={() => setIsPreviewOpen(true)} className="hidden xs:flex border-border dark:border-gray-600 text-foreground dark:text-white hover:bg-muted dark:hover:bg-gray-700">
+          <Separator orientation="vertical" className="h-6 hidden sm:block bg-border dark:bg-white/10" />
+          <Button variant="outline" size="sm" onClick={() => setIsPreviewOpen(true)} className="hidden xs:flex border-border dark:border-white/10 text-foreground dark:text-white hover:bg-muted dark:hover:bg-white/10">
             <Eye className="w-4 h-4 sm:mr-2" />
             <span className="hidden sm:inline">Preview</span>
           </Button>
@@ -279,7 +319,7 @@ export function CheckoutEditor({ onBack }: CheckoutEditorProps) {
           </div>
 
           {/* Component Palette - Fixed Right Side */}
-          <div className="hidden md:flex fixed right-0 top-14 bottom-0 w-80 border-l border-border dark:border-gray-700 bg-sidebar dark:bg-[#1e1e2e] flex-col z-30">
+          <div className="hidden md:flex fixed right-0 top-14 bottom-0 w-80 border-l border-border dark:border-white/10 bg-sidebar dark:bg-[#0b0e0e] flex-col z-30">
             <ComponentPalette />
           </div>
 
@@ -301,12 +341,12 @@ export function CheckoutEditor({ onBack }: CheckoutEditorProps) {
           )}
         </div>
 
-        {/* Drag Overlay */}
-        <DragOverlay>
-          {activeId && activeComponent && activeConfig ? (
+        {/* Drag Overlay (some instantaneamente no drop, sem voltar à origem) */}
+        <DragOverlay dropAnimation={null}>
+          {overlayComponent && overlayConfig ? (
             <div className="w-[500px] opacity-80 pointer-events-none">
               <CheckoutComponentRenderer
-                component={activeComponent}
+                component={overlayComponent}
               />
             </div>
           ) : null}

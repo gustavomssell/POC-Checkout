@@ -67,7 +67,7 @@ export function ToggleRow({ label, hint, checked, onChange }: ToggleRowProps) {
         <p className="text-xs font-medium">{label}</p>
         {hint && <p className="text-[11px] leading-snug text-muted-foreground">{hint}</p>}
       </div>
-      <Switch checked={checked} onCheckedChange={onChange} className="shrink-0" />
+      <Switch checked={checked} onCheckedChange={onChange} aria-label={label} className="shrink-0" />
     </div>
   )
 }

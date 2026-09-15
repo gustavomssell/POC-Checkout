@@ -1,4 +1,4 @@
-import { X, Trash2, Copy, Check, MapPin, Type, Tag, ListChecks, CreditCard, Percent, ShieldCheck, Building2, Timer, MessageCircle, Video, Users, Ticket, Gift, LayoutGrid } from 'lucide-react'
+import { X, Trash2, Copy, Check, MapPin, Type, Tag, ListChecks, CreditCard, Percent, ShieldCheck, Building2, Timer, MessageCircle, Video, Users, Ticket, Gift, LayoutGrid, StretchHorizontal } from 'lucide-react'
 import { useCheckoutStore } from '@/stores/checkoutStore'
 import { CHECKOUT_COMPONENTS } from '@/lib/constants'
 import { Input } from '@/components/ui/input'
@@ -111,12 +111,28 @@ function PropertiesHeader({ controller }: { controller: PropertiesController }) 
   )
 }
 
+function LayoutProperties({ component }: { component: CheckoutComponent }) {
+  const updateComponent = useCheckoutStore((s) => s.updateComponent)
+
+  return (
+    <Section icon={StretchHorizontal} title="Largura">
+      <ToggleRow
+        label="Largura total"
+        hint="Desligado limita o componente a uma faixa estreita centralizada."
+        checked={component.fullWidth !== false}
+        onChange={(checked) => updateComponent(component.id, { fullWidth: checked })}
+      />
+    </Section>
+  )
+}
+
 function PropertiesSections({ controller }: { controller: PropertiesController }) {
   const { component, handleUpdateProp } = controller
   if (!component) return null
 
   return (
     <>
+      <LayoutProperties component={component} />
       {component.type === 'header' && (
         <HeaderProperties props={component.props} onUpdate={handleUpdateProp} />
       )}

@@ -135,4 +135,80 @@ describe('Grid cells', () => {
       useCheckoutStore.getState().removeComponentFromCell(gridId, 0),
     ).not.toThrow()
   })
+
+  it('addComponentToCell com grid cria colunas e filhos vazios', () => {
+    setup()
+    const s = useCheckoutStore.getState()
+    s.addComponent('grid-2')
+    const [gridId] = ids()
+
+    useCheckoutStore.getState().addComponentToCell(gridId, 0, 'grid-1')
+
+    const child = useCheckoutStore.getState().currentTemplate?.components[0].children?.[0]
+    expect(child?.type).toBe('grid-1')
+    expect(child?.gridColumns).toBe(1)
+    expect(child?.children).toEqual([])
+  })
+
+  it('add/remove funcionam em grid aninhado (2 níveis)', () => {
+    setup()
+    const s = useCheckoutStore.getState()
+    s.addComponent('grid-2')
+    const [outerId] = ids()
+    s.addComponentToCell(outerId, 0, 'grid-2')
+    const innerId = useCheckoutStore.getState().currentTemplate?.components[0].children?.[0]?.id
+    expect(innerId).toBeTruthy()
+
+    useCheckoutStore.getState().addComponentToCell(innerId!, 1, 'coupon')
+    const inner = findDeep(innerId!)
+    expect(inner?.children?.[1]?.type).toBe('coupon')
+
+    useCheckoutStore.getState().removeComponentFromCell(innerId!, 1)
+    expect(findDeep(innerId!)?.children?.filter(Boolean)).toHaveLength(0)
+
+    function findDeep(id: string) {
+      const comps = useCheckoutStore.getState().currentTemplate?.components || []
+      const walk = (list: typeof comps): (typeof comps)[number] | undefined => {
+        for (const c of list) {
+          if (c.id === id) return c
+          if (c.children) {
+            const found = walk(c.children.filter(Boolean))
+            if (found) return found
+          }
+        }
+        return undefined
+      }
+      return walk(comps)
+    }
+  })
+
+  it('addComponentToCell com parent inexistente não quebra nem altera', () => {
+    setup()
+    const s = useCheckoutStore.getState()
+    s.addComponent('grid-2')
+    const before = JSON.stringify(useCheckoutStore.getState().currentTemplate?.components)
+
+    useCheckoutStore.getState().addComponentToCell('id-inexistente', 0, 'coupon')
+
+    expect(JSON.stringify(useCheckoutStore.getState().currentTemplate?.components)).toBe(before)
+  })
+
+  it('duplicate clona ids únicos em todos os níveis', () => {
+    setup()
+    const s = useCheckoutStore.getState()
+    s.addComponent('grid-2')
+    const [gridId] = ids()
+    s.addComponentToCell(gridId, 0, 'grid-1')
+    const innerId = useCheckoutStore.getState().currentTemplate?.components[0].children?.[0]?.id
+    s.addComponentToCell(innerId!, 0, 'coupon')
+
+    useCheckoutStore.getState().duplicateComponent(gridId)
+
+    const comps = useCheckoutStore.getState().currentTemplate?.components || []
+    expect(comps).toHaveLength(2)
+    const collectIds = (list: typeof comps): string[] =>
+      list.flatMap((c) => [c.id, ...collectIds((c.children || []).filter(Boolean))])
+    const allIds = collectIds(comps)
+    expect(new Set(allIds).size).toBe(allIds.length)
+  })
 })

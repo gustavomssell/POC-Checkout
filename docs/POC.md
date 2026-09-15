@@ -26,7 +26,9 @@ interface CheckoutComponent {
 
 ### Zonas e grids aninhados
 
-O formulário fixo divide o canvas em três zonas (`canvas-top`, `canvas-bottom`, `canvas-sidebar`), cada uma com seu `SortableContext`. Mover itens dentro da zona reordena; soltar em outra zona move (`moveComponentToZone`). Linhas são componentes com `children`: cada célula é um `useDroppable` (`<parentId>-cell-<i>`), e dá para arrastar para dentro, entre células e de volta para fora.
+O formulário fixo divide o canvas em três zonas (`canvas-top`, `canvas-bottom`, `canvas-sidebar`), cada uma com seu `SortableContext`. Mover itens dentro da zona reordena; soltar em outra zona move (`moveComponentToZone`). Linhas são componentes com `children`: cada célula é um `useDroppable` (`<parentId>-cell-<i>`), e dá para arrastar para dentro, entre células e de volta para fora — inclusive em grids aninhados, com `add`/`remove`/`duplicate` recursivos na store.
+
+Durante o arrasto, o alvo atual acende: zonas e células com anel verde, itens com contorno tracejado e selo "Soltar aqui" (via `useDndContext`). O fantasma do item (`DragOverlay` com `dropAnimation={null}`) some no instante do drop, sem animação de retorno.
 
 ### Propriedades em modal
 

@@ -63,6 +63,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 interface CheckoutComponentRendererProps {
   component: CheckoutComponent
   isSelected?: boolean
+  isDropTarget?: boolean
   onClick?: () => void
   onDelete?: () => void
   onDuplicate?: () => void
@@ -73,6 +74,7 @@ interface CheckoutComponentRendererProps {
 export function CheckoutComponentRenderer({
   component,
   isSelected,
+  isDropTarget,
   onClick,
   onDelete,
   onDuplicate,
@@ -80,17 +82,26 @@ export function CheckoutComponentRenderer({
 }: CheckoutComponentRendererProps) {
   const { type, props } = component
   const componentConfig = CHECKOUT_COMPONENTS.find((c) => c.type === type)
+  const fullWidth = component.fullWidth !== false
 
   const wrapperClass = `
     relative group border-2 transition-all cursor-pointer
-    ${isSelected 
-      ? 'border-emerald-500 shadow-[0_0_0_2px_rgba(16,185,129,0.2)]' 
-      : 'border-transparent hover:border-emerald-300'
+    ${fullWidth ? '' : 'max-w-md mx-auto'}
+    ${isDropTarget
+      ? 'border-dashed border-emerald-500 bg-emerald-500/5'
+      : isSelected
+        ? 'border-emerald-500 shadow-[0_0_0_2px_rgba(16,185,129,0.2)]'
+        : 'border-transparent hover:border-emerald-300'
     }
   `
 
   const ActionBar = () => (
     <>
+      {isDropTarget && (
+        <div className="absolute -top-3 left-2 z-10 bg-emerald-600 text-white text-[10px] font-medium px-2 py-0.5 rounded whitespace-nowrap">
+          Soltar aqui
+        </div>
+      )}
       <div className={`
         absolute -top-3 right-2 flex items-center gap-1 z-10
         bg-emerald-600 rounded-md px-1 py-0.5 shadow-lg
@@ -296,7 +307,7 @@ function DroppableCell({ id, index, children }: { id: string; index: number; chi
     <div
       ref={setNodeRef}
       className={`
-        min-h-[100px] border-2 border-dashed rounded-lg flex items-center justify-center transition-colors
+        min-h-[100px] border-2 border-dashed rounded-lg flex flex-col items-stretch justify-center transition-colors
         ${isOver 
           ? 'border-emerald-500 bg-emerald-500/10' 
           : 'border-muted-foreground/20 bg-muted/30'

@@ -224,6 +224,19 @@ describe('Builder: comportamentos específicos', () => {
     expect(screen.getByText('Boleto')).toBeInTheDocument()
   })
 
+  it('fullWidth false limita a faixa no builder', () => {
+    const component = { ...makeComponent('coupon'), fullWidth: false }
+    const { container } = render(<CheckoutComponentRenderer component={component} />)
+    expect(container.firstChild).toHaveClass('max-w-md')
+  })
+
+  it('fullWidth padrão ocupa a faixa toda no builder', () => {
+    const { container } = render(
+      <CheckoutComponentRenderer component={makeComponent('coupon')} />,
+    )
+    expect(container.firstChild).not.toHaveClass('max-w-md')
+  })
+
   it('payment-methods respeita métodos configurados', () => {
     const component = makeComponent('payment-methods', { methods: ['pix'] })
     render(<CheckoutComponentRenderer component={component} />)
@@ -321,6 +334,12 @@ describe('Preview: renderiza todos os tipos', () => {
     expect(screen.getByText('Seus dados')).toBeInTheDocument()
     expect(screen.getByText('Compra segura')).toBeInTheDocument()
     expect(container.querySelector('.flex-col')).not.toBeNull()
+  })
+
+  it('preview limita componente sem fullWidth', () => {
+    const component = { ...makeComponent('coupon', {}, 'preview-narrow'), fullWidth: false }
+    const { container } = render(<PreviewRenderer components={[component]} />)
+    expect(container.querySelector('.max-w-md')).not.toBeNull()
   })
 
   it('preview de grid renderiza os filhos nas colunas', () => {

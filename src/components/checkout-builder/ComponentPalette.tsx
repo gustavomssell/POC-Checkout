@@ -84,7 +84,7 @@ function DraggablePaletteItem({ type, name, icon }: DraggablePaletteItemProps) {
       ref={setNodeRef}
       style={style}
       className={`
-        flex flex-col items-center justify-center p-3 rounded-lg border bg-card cursor-grab
+        flex flex-col items-center justify-center p-3 rounded-lg border border-muted-foreground/25 bg-card cursor-grab
         hover:border-primary/50 hover:bg-accent transition-colors aspect-square
         ${isDragging ? 'opacity-50 shadow-lg' : ''}
       `}
@@ -124,19 +124,19 @@ function DraggableLineItem({ type, columns, label }: DraggableLineItemProps) {
       ref={setNodeRef}
       style={style}
       className={`
-        flex flex-col gap-1 p-3 rounded-lg border border-dashed border-primary/30 bg-primary/5
-        cursor-grab hover:border-primary/50 hover:bg-primary/10 transition-colors
+        flex flex-col gap-2 p-3 rounded-lg border border-dashed border-muted-foreground/30 bg-card
+        cursor-grab hover:border-primary/50 hover:bg-accent transition-colors
         ${isDragging ? 'opacity-50 shadow-lg' : ''}
       `}
       {...listeners}
       {...attributes}
     >
-      <div className="text-center text-xs text-muted-foreground mb-1">{label}</div>
+      <span className="text-xs font-medium">{label}</span>
       <div className="flex gap-1">
         {Array.from({ length: columns }).map((_, i) => (
           <div
             key={i}
-            className="flex-1 h-12 rounded border border-dashed border-muted-foreground/30 bg-background flex items-center justify-center"
+            className="flex-1 h-12 rounded border border-dashed border-muted-foreground/30 bg-background flex items-center justify-center min-w-0"
           >
             <span className="text-xs text-muted-foreground">{i + 1}</span>
           </div>
@@ -181,7 +181,7 @@ export function ComponentPalette() {
   ]
 
   return (
-    <div className="flex-1 bg-sidebar dark:bg-[#1e1e2e] flex flex-col h-full">
+    <div className="flex-1 bg-sidebar dark:bg-[#0b0e0e] flex flex-col h-full">
       {/* Tabs */}
       <div className="flex border-b">
         {tabs.map((tab) => (
@@ -247,7 +247,7 @@ export function ComponentPalette() {
         )}
 
         {activeTab === 'lines' && (
-          <div className="space-y-3">
+          <div className="flex flex-col gap-2">
             <DraggableLineItem type="grid-1" columns={1} label="Linha 1 coluna" />
             <DraggableLineItem type="grid-2" columns={2} label="Linha 2 colunas" />
             <DraggableLineItem type="grid-3" columns={3} label="Linha 3 colunas" />

@@ -1,4 +1,4 @@
-import { useDroppable } from '@dnd-kit/core'
+import { useDndContext, useDroppable } from '@dnd-kit/core'
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -21,6 +21,8 @@ interface SortableItemProps {
 
 function SortableItem({ component, isSelected, onSelect }: SortableItemProps) {
   const { removeComponent, duplicateComponent } = useCheckoutStore()
+  const { over } = useDndContext()
+  const isDropTarget = over?.id === component.id && !isSelected
 
   const {
     attributes,
@@ -53,6 +55,7 @@ function SortableItem({ component, isSelected, onSelect }: SortableItemProps) {
       <CheckoutComponentRenderer
         component={component}
         isSelected={isSelected}
+        isDropTarget={isDropTarget}
         onClick={() => onSelect(component.id)}
         onDelete={() => removeComponent(component.id)}
         onDuplicate={handleDuplicate}
@@ -124,7 +127,7 @@ export function Canvas({ onComponentSelect }: CanvasProps) {
   return (
     <ThemeProvider theme={currentTemplate.theme}>
       <div
-        className="flex-1 h-full overflow-y-auto bg-muted/30 dark:bg-[#1a1a2e] p-4 md:p-6 lg:p-8"
+        className="flex-1 h-full overflow-y-auto bg-muted/30 dark:bg-[#0b0e0e] p-4 md:p-6 lg:p-8"
       >
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-6 gap-4">
@@ -132,7 +135,7 @@ export function Canvas({ onComponentSelect }: CanvasProps) {
             <div className="col-span-4">
               <div className="bg-[var(--theme-form-background)] rounded-2xl overflow-hidden">
                 <div className="p-5 w-full">
-                  <div className="flex w-full flex-col items-start gap-3">
+                  <div className="flex w-full flex-col items-stretch gap-3">
                     {/* Drop zone ABOVE the fixed form */}
                     <DropZone id="canvas-top">
                       {aboveComponents.length > 0 ? (
@@ -140,7 +143,7 @@ export function Canvas({ onComponentSelect }: CanvasProps) {
                           items={aboveComponents.map((c) => c.id)}
                           strategy={verticalListSortingStrategy}
                         >
-                          <div className="flex w-full flex-col items-start gap-3">
+                          <div className="flex w-full flex-col items-stretch gap-3">
                             {aboveComponents.map((component) => (
                               <SortableItem
                                 key={component.id}
@@ -179,7 +182,7 @@ export function Canvas({ onComponentSelect }: CanvasProps) {
                             items={belowComponents.map((c) => c.id)}
                             strategy={verticalListSortingStrategy}
                           >
-                            <div className="flex w-full flex-col items-start gap-3">
+                            <div className="flex w-full flex-col items-stretch gap-3">
                               {belowComponents.map((component) => (
                                 <SortableItem
                                   key={component.id}
@@ -220,7 +223,7 @@ export function Canvas({ onComponentSelect }: CanvasProps) {
                       items={sidebarComponents.map((c) => c.id)}
                       strategy={verticalListSortingStrategy}
                     >
-                      <div className="flex w-full flex-col items-start gap-3">
+                      <div className="flex w-full flex-col items-stretch gap-3">
                         {sidebarComponents.map((component) => (
                           <SortableItem
                             key={component.id}

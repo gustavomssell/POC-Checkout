@@ -85,11 +85,22 @@ describe('PropertyPanel: novos controles', () => {
     // Vem ativo nos defaults
     expect(screen.getByText('Rótulo do desconto')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('switch'))
+    fireEvent.click(screen.getByRole('switch', { name: 'Mostrar desconto' }))
 
     expect(screen.queryByText('Rótulo do desconto')).not.toBeInTheDocument()
     const component = useCheckoutStore.getState().currentTemplate?.components[0]
     expect(component?.props.showDiscount).toBe(false)
+  })
+
+  it('flag de largura total alterna na store', () => {
+    openPanel('coupon')
+    expect(screen.getByText('Largura total')).toBeInTheDocument()
+
+    const toggle = screen.getByRole('switch', { name: 'Largura total' })
+    fireEvent.click(toggle)
+
+    const component = useCheckoutStore.getState().currentTemplate?.components[0]
+    expect(component?.fullWidth).toBe(false)
   })
 
   it('mostra selo de posição para componente acima do checkout', () => {

@@ -40,19 +40,19 @@ describe('System theme: editor chrome respeita claro/escuro', () => {
 
     const root = container.firstChild as HTMLElement
     expect(root.getAttribute('class')).toContain('bg-background')
-    expect(root.getAttribute('class')).toContain('dark:bg-[#1a1a2e]')
+    expect(root.getAttribute('class')).toContain('dark:bg-[#0b0e0e]')
 
     const header = container.querySelector('header')
     expect(header?.getAttribute('class')).toContain('bg-card')
-    expect(header?.getAttribute('class')).toContain('dark:bg-[#1a1a2e]')
+    expect(header?.getAttribute('class')).toContain('dark:bg-[#0b0e0e]')
     expect(header?.getAttribute('class')).toContain('border-border')
-    expect(header?.getAttribute('class')).toContain('dark:border-gray-700')
+    expect(header?.getAttribute('class')).toContain('dark:border-white/10')
   })
 
   it('painel lateral da paleta usa sidebar no claro e escuro fixo no dark', () => {
     const { container } = render(<ComponentPalette />)
     const root = container.firstChild as HTMLElement
     expect(root.getAttribute('class')).toContain('bg-sidebar')
-    expect(root.getAttribute('class')).toContain('dark:bg-[#1e1e2e]')
+    expect(root.getAttribute('class')).toContain('dark:bg-[#0b0e0e]')
   })
 })

@@ -69,6 +69,33 @@ describe('CheckoutComponentRenderer', () => {
     expect(container.firstChild).toHaveClass('border-emerald-500')
   })
 
+  it('should show drop target indicator when isDropTarget is true', () => {
+    const component: CheckoutComponent = {
+      id: 'test-drop',
+      type: 'header',
+      props: {},
+      order: 0,
+    }
+
+    const { container } = render(
+      <CheckoutComponentRenderer component={component} isDropTarget={true} />
+    )
+    expect(screen.getByText('Soltar aqui')).toBeInTheDocument()
+    expect(container.firstChild).toHaveClass('border-dashed')
+  })
+
+  it('should not show drop target indicator by default', () => {
+    const component: CheckoutComponent = {
+      id: 'test-nodrop',
+      type: 'header',
+      props: {},
+      order: 0,
+    }
+
+    render(<CheckoutComponentRenderer component={component} />)
+    expect(screen.queryByText('Soltar aqui')).not.toBeInTheDocument()
+  })
+
   it('should call onClick when clicked', () => {
     const component: CheckoutComponent = {
       id: 'test-5',

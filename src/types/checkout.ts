@@ -33,6 +33,8 @@ export interface CheckoutComponent {
   gridColumns?: GridColumns
   /** Posição em relação ao formulário fixo do checkout. Ausente = 'below' (compatibilidade). */
   placement?: ComponentPlacement
+  /** Largura total da faixa. Ausente = true (compatibilidade). */
+  fullWidth?: boolean
 }
 
 export interface CheckoutTemplate {

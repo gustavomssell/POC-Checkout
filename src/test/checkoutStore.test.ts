@@ -89,4 +89,28 @@ describe('CheckoutStore', () => {
     const { templates } = useCheckoutStore.getState()
     expect(templates).toHaveLength(0)
   })
+
+  it('should default components to full width', () => {
+    const { createTemplate, addComponent } = useCheckoutStore.getState()
+    createTemplate('Test Checkout', 'A test checkout')
+    addComponent('header')
+
+    const component = useCheckoutStore.getState().currentTemplate?.components[0]
+    expect(component?.fullWidth).toBe(true)
+  })
+
+  it('should toggle fullWidth and preserve it on duplicate', () => {
+    const { createTemplate, addComponent, updateComponent, duplicateComponent } = useCheckoutStore.getState()
+    createTemplate('Test Checkout', 'A test checkout')
+    addComponent('header')
+
+    const id = useCheckoutStore.getState().currentTemplate?.components[0].id
+    updateComponent(id!, { fullWidth: false })
+    expect(useCheckoutStore.getState().currentTemplate?.components[0].fullWidth).toBe(false)
+
+    duplicateComponent(id!)
+    const components = useCheckoutStore.getState().currentTemplate?.components || []
+    expect(components).toHaveLength(2)
+    expect(components[1].fullWidth).toBe(false)
+  })
 })
