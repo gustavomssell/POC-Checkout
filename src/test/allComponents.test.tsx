@@ -113,7 +113,8 @@ describe('Store: addComponent para todos os tipos', () => {
     expect(component?.type).toBe(type)
     expect(component?.id).toBeTruthy()
     expect(component?.props).toEqual(config?.defaultProps)
-    expect(useCheckoutStore.getState().selectedComponentId).toBe(component?.id)
+    // Sem auto-seleção: o modal abre só no clique
+    expect(useCheckoutStore.getState().selectedComponentId).toBeNull()
   })
 
   it.each(Object.keys(GRID_COLUMNS) as ComponentType[])(
@@ -351,9 +352,10 @@ describe('PropertyPanel: todos os tipos', () => {
   beforeEach(resetStore)
 
   it.each(ALL_TYPES)('abre painel de %s', (type) => {
-    const { createTemplate, addComponent } = useCheckoutStore.getState()
+    const { createTemplate, addComponent, selectComponent } = useCheckoutStore.getState()
     createTemplate('T', 'D')
     addComponent(type)
+    selectComponent(useCheckoutStore.getState().currentTemplate?.components[0].id ?? null)
 
     render(<PropertyPanel />)
     const config = CHECKOUT_COMPONENTS.find((c) => c.type === type)
@@ -361,9 +363,10 @@ describe('PropertyPanel: todos os tipos', () => {
   })
 
   it('editar nome do produto atualiza a store', () => {
-    const { createTemplate, addComponent } = useCheckoutStore.getState()
+    const { createTemplate, addComponent, selectComponent } = useCheckoutStore.getState()
     createTemplate('T', 'D')
     addComponent('product-card')
+    selectComponent(useCheckoutStore.getState().currentTemplate?.components[0].id ?? null)
 
     render(<PropertyPanel />)
     const input = screen.getByDisplayValue('Produto Exemplo')
@@ -374,9 +377,10 @@ describe('PropertyPanel: todos os tipos', () => {
   })
 
   it('editar preço do upsell atualiza a store', () => {
-    const { createTemplate, addComponent } = useCheckoutStore.getState()
+    const { createTemplate, addComponent, selectComponent } = useCheckoutStore.getState()
     createTemplate('T', 'D')
     addComponent('upsell')
+    selectComponent(useCheckoutStore.getState().currentTemplate?.components[0].id ?? null)
 
     render(<PropertyPanel />)
     const inputs = screen.getAllByRole('spinbutton')

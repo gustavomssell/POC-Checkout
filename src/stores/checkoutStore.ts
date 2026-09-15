@@ -102,7 +102,7 @@ export const useCheckoutStore = create<CheckoutState>()(
 
         const updatedComponents = [...currentTemplate.components, component]
         get().updateTemplate(currentTemplate.id, { components: updatedComponents })
-        set({ selectedComponentId: component.id })
+        // Sem auto-seleção: o modal de propriedades abre só no clique.
       },
 
       addComponentToCell: (parentId, cellIndex, type) => {
@@ -127,7 +127,7 @@ export const useCheckoutStore = create<CheckoutState>()(
         })
 
         get().updateTemplate(currentTemplate.id, { components: updatedComponents })
-        set({ selectedComponentId: newComponent.id })
+        // Sem auto-seleção: o modal de propriedades abre só no clique.
       },
 
       removeComponentFromCell: (parentId, cellIndex) => {
@@ -179,7 +179,7 @@ export const useCheckoutStore = create<CheckoutState>()(
 
         const updatedComponents = [...currentTemplate.components, duplicatedComponent]
         get().updateTemplate(currentTemplate.id, { components: updatedComponents })
-        set({ selectedComponentId: duplicatedComponent.id })
+        // Mantém a seleção atual: o modal abre só no clique.
       },
 
       updateComponent: (id, updates) => {

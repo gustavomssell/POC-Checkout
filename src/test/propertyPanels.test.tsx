@@ -14,9 +14,11 @@ function resetStore() {
 }
 
 function openPanel(type: Parameters<typeof useCheckoutStore.getState.addComponent>[0]) {
-  const { createTemplate, addComponent } = useCheckoutStore.getState()
+  const { createTemplate, addComponent, selectComponent } = useCheckoutStore.getState()
   createTemplate('T', 'D')
   addComponent(type)
+  const id = useCheckoutStore.getState().currentTemplate?.components[0].id
+  selectComponent(id ?? null)
   render(<PropertyPanel />)
 }
 
@@ -91,9 +93,10 @@ describe('PropertyPanel: novos controles', () => {
   })
 
   it('mostra selo de posição para componente acima do checkout', () => {
-    const { createTemplate, addComponent } = useCheckoutStore.getState()
+    const { createTemplate, addComponent, selectComponent } = useCheckoutStore.getState()
     createTemplate('T', 'D')
     addComponent('header', 'above')
+    selectComponent(useCheckoutStore.getState().currentTemplate?.components[0].id ?? null)
     render(<PropertyPanel />)
 
     expect(screen.getByText('Acima do checkout')).toBeInTheDocument()
@@ -104,9 +107,10 @@ describe('ComponentPropertiesDialog', () => {
   beforeEach(resetStore)
 
   it('abre modal ao selecionar componente e fecha ao clicar Fechar', () => {
-    const { createTemplate, addComponent } = useCheckoutStore.getState()
+    const { createTemplate, addComponent, selectComponent } = useCheckoutStore.getState()
     createTemplate('T', 'D')
     addComponent('coupon')
+    selectComponent(useCheckoutStore.getState().currentTemplate?.components[0].id ?? null)
 
     render(<ComponentPropertiesDialog />)
     // h2 visível + título sr-only de acessibilidade
@@ -118,6 +122,16 @@ describe('ComponentPropertiesDialog', () => {
   })
 
   it('não renderiza nada sem seleção', () => {
+    const { container } = render(<ComponentPropertiesDialog />)
+    expect(container).toBeEmptyDOMElement()
+  })
+
+  it('adicionar componente não abre o modal (só o clique abre)', () => {
+    const { createTemplate, addComponent } = useCheckoutStore.getState()
+    createTemplate('T', 'D')
+    addComponent('coupon')
+
+    expect(useCheckoutStore.getState().selectedComponentId).toBeNull()
     const { container } = render(<ComponentPropertiesDialog />)
     expect(container).toBeEmptyDOMElement()
   })
