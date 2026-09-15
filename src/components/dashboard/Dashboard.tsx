@@ -62,6 +62,7 @@ export function Dashboard({ onOpenCheckout, onOpenFlow }: DashboardProps) {
                     placeholder="Meu Checkout"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
+                    className="bg-muted dark:bg-background"
                   />
                 </div>
                 <div className="space-y-2">
@@ -71,6 +72,7 @@ export function Dashboard({ onOpenCheckout, onOpenFlow }: DashboardProps) {
                     placeholder="Descrição opcional"
                     value={newDescription}
                     onChange={(e) => setNewDescription(e.target.value)}
+                    className="bg-muted dark:bg-background"
                   />
                 </div>
               </div>
