@@ -1,5 +1,5 @@
 import type { ComponentConfig } from '@/types/checkout'
-import type { FlowNodeConfig, FlowNode, FlowEdge } from '@/types/flow'
+import type { FlowNodeConfig, FlowNode, FlowEdge, FlowNodeType } from '@/types/flow'
 
 export const CHECKOUT_COMPONENTS: ComponentConfig[] = [
   {
@@ -304,24 +304,67 @@ export const FLOW_NODE_TYPES: FlowNodeConfig[] = [
   },
 ]
 
+/** Valores iniciais por tipo de nó do flow (usados ao arrastar da paleta). */
+export const FLOW_NODE_DEFAULT_DATA: Record<FlowNodeType, Record<string, unknown>> = {
+  start: { trigger: 'checkout_created' },
+  checkout: { checkoutId: '', redirectUrl: '', successAction: 'continue' },
+  upsell: {
+    productName: 'Oferta especial',
+    price: 97,
+    originalPrice: 197,
+    acceptText: 'Sim, quero!',
+    declineText: 'Não, obrigado',
+    allowSkip: true,
+  },
+  'thank-you': {
+    headline: 'Obrigado pela compra!',
+    message: 'Enviamos os detalhes para o seu e-mail.',
+    showSummary: true,
+    couponCode: '',
+    redirectUrl: '',
+  },
+  email: {
+    toMode: 'customer',
+    toEmail: '',
+    fromName: '',
+    subject: 'Obrigado pela compra!',
+    template: 'confirmation-email',
+    delayMinutes: 0,
+  },
+  condition: {
+    mode: 'simple',
+    field: 'pagamento_aprovado',
+    operator: '==',
+    value: 'true',
+    condition: 'pagamento_aprovado == true',
+  },
+  webhook: {
+    url: '',
+    method: 'POST',
+    headers: [{ key: 'Content-Type', value: 'application/json' }],
+    queryParams: [],
+    body: '{\n  "orderId": "{{order.id}}",\n  "status": "{{order.status}}"\n}',
+  },
+}
+
 export const DEFAULT_FLOW_NODES: FlowNode[] = [
   {
     id: 'start-1',
     type: 'start',
     position: { x: 250, y: 50 },
-    data: { label: 'Início', type: 'start' },
+    data: { label: 'Início', type: 'start', ...FLOW_NODE_DEFAULT_DATA.start },
   },
   {
     id: 'checkout-1',
     type: 'checkout',
     position: { x: 250, y: 150 },
-    data: { label: 'Checkout', type: 'checkout' },
+    data: { label: 'Checkout', type: 'checkout', ...FLOW_NODE_DEFAULT_DATA.checkout },
   },
   {
     id: 'thank-you-1',
     type: 'thank-you',
     position: { x: 250, y: 250 },
-    data: { label: 'Obrigado', type: 'thank-you' },
+    data: { label: 'Obrigado', type: 'thank-you', ...FLOW_NODE_DEFAULT_DATA['thank-you'] },
   },
 ]
 

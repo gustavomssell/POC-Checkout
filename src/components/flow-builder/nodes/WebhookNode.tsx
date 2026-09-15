@@ -1,31 +1,36 @@
-import { Handle, Position, type NodeProps } from '@xyflow/react'
+import { Position, type NodeProps } from '@xyflow/react'
 import { Webhook } from 'lucide-react'
+import { FlowNodeShell } from './flow-node-shell'
+import { cn } from '@/lib/utils'
+
+const METHOD_BADGE: Record<string, string> = {
+  GET: 'method-badge method-get',
+  POST: 'method-badge method-post',
+  PUT: 'method-badge method-put',
+  PATCH: 'method-badge method-patch',
+  DELETE: 'method-badge method-delete',
+}
 
 export function WebhookNode({ data, selected }: NodeProps) {
+  const d = data as { label: string; method?: string; url?: string }
+  const method = d.method || 'POST'
+  const short = (d.url || '').replace(/^https?:\/\//, '').split(/[/?]/)[0].slice(0, 24)
   return (
-    <div
-      className={`
-        px-4 py-3 rounded-xl border-2 bg-indigo-50 font-medium text-sm text-slate-900 min-w-[140px]
-        ${selected ? 'border-indigo-500 shadow-lg' : 'border-indigo-200'}
-        transition-all duration-200
-      `}
-    >
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="w-3 h-3 bg-indigo-500 border-2 border-white"
-      />
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center">
-          <Webhook className="w-4 h-4 text-white" />
-        </div>
-        <span>{(data as { label: string }).label}</span>
-      </div>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="w-3 h-3 bg-indigo-500 border-2 border-white"
-      />
-    </div>
+    <FlowNodeShell
+      color="#6366f1"
+      icon={Webhook}
+      label={d.label}
+      caption={
+        <span className="inline-flex items-center gap-1.5 max-w-full">
+          <span className={cn(METHOD_BADGE[method] ?? 'method-badge method-post')}>{method}</span>
+          <span className="truncate">{short || 'url…'}</span>
+        </span>
+      }
+      selected={selected}
+      handles={[
+        { type: 'target', position: Position.Top },
+        { type: 'source', position: Position.Bottom },
+      ]}
+    />
   )
 }

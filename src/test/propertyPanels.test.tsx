@@ -148,12 +148,12 @@ describe('ComponentPropertiesDialog', () => {
   })
 })
 
-function flowNode(type: string): Node {
+function flowNode(type: string, data: Record<string, unknown> = {}): Node {
   return {
     id: 'node-1',
     type,
     position: { x: 0, y: 0 },
-    data: { label: 'Nó', type },
+    data: { label: 'Nó', type, ...data },
   } as unknown as Node
 }
 
@@ -174,12 +174,35 @@ describe('FlowPropertyPanel', () => {
     expect(onUpdate).toHaveBeenCalledWith('node-1', { method: 'PUT' })
   })
 
-  it('condition mostra dica de expressão', () => {
-    render(
-      <FlowPropertyPanel selectedNode={flowNode('condition')} onUpdateNode={vi.fn()} onClose={vi.fn()} />,
+  it('condition simples mostra construtor e avança para expressão', () => {
+    const onUpdate = vi.fn()
+    const { rerender } = render(
+      <FlowPropertyPanel selectedNode={flowNode('condition')} onUpdateNode={onUpdate} onClose={vi.fn()} />,
+    )
+    // Modo simples por padrão: campo + operador + valor com preview
+    expect(screen.getByLabelText('Campo da condição')).toBeInTheDocument()
+    expect(screen.getByLabelText('Operador da condição')).toBeInTheDocument()
+    expect(screen.getByText(/saída verde/)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Avançada' }))
+    expect(onUpdate).toHaveBeenCalledWith('node-1', { mode: 'advanced' })
+
+    rerender(
+      <FlowPropertyPanel selectedNode={flowNode('condition', { mode: 'advanced' })} onUpdateNode={onUpdate} onClose={vi.fn()} />,
     )
     expect(screen.getByPlaceholderText('Ex: pagamento_aprovado == true')).toBeInTheDocument()
-    expect(screen.getByText(/saída verde/)).toBeInTheDocument()
+  })
+
+  it('condition simples deriva a expressão ao trocar o campo', () => {
+    const onUpdate = vi.fn()
+    render(
+      <FlowPropertyPanel selectedNode={flowNode('condition')} onUpdateNode={onUpdate} onClose={vi.fn()} />,
+    )
+    fireEvent.change(screen.getByLabelText('Operador da condição'), { target: { value: '>' } })
+    expect(onUpdate).toHaveBeenCalledWith(
+      'node-1',
+      expect.objectContaining({ operator: '>', condition: expect.stringContaining('>') }),
+    )
   })
 
   it('estado vazio orienta a selecionar', () => {
@@ -197,5 +220,102 @@ describe('FlowPropertyPanel', () => {
 
     fireEvent.click(screen.getByTitle('Fechar'))
     expect(onClose).toHaveBeenCalled()
+  })
+})
+
+describe('FlowPropertyPanel: campos por tipo de nó', () => {
+  it('start mostra o gatilho de disparo', () => {
+    const onUpdate = vi.fn()
+    render(
+      <FlowPropertyPanel selectedNode={flowNode('start')} onUpdateNode={onUpdate} onClose={vi.fn()} />,
+    )
+    const trigger = screen.getByLabelText('Evento de disparo')
+    fireEvent.change(trigger, { target: { value: 'manual' } })
+    expect(onUpdate).toHaveBeenCalledWith('node-1', { trigger: 'manual' })
+  })
+
+  it('checkout mostra ação de conclusão e redirecionamento', () => {
+    render(
+      <FlowPropertyPanel selectedNode={flowNode('checkout')} onUpdateNode={vi.fn()} onClose={vi.fn()} />,
+    )
+    expect(screen.getByPlaceholderText('checkout-principal')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Redirecionar' })).toBeInTheDocument()
+  })
+
+  it('upsell mostra oferta e permite pular', () => {
+    const onUpdate = vi.fn()
+    render(
+      <FlowPropertyPanel selectedNode={flowNode('upsell')} onUpdateNode={onUpdate} onClose={vi.fn()} />,
+    )
+    expect(screen.getByText('Oferta')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('switch', { name: 'Permitir pular' }))
+    expect(onUpdate).toHaveBeenCalledWith('node-1', { allowSkip: expect.any(Boolean) })
+  })
+
+  it('thank-you mostra resumo e cupom', () => {
+    render(
+      <FlowPropertyPanel selectedNode={flowNode('thank-you')} onUpdateNode={vi.fn()} onClose={vi.fn()} />,
+    )
+    expect(screen.getByText('Mostrar resumo do pedido')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('VOLTE10')).toBeInTheDocument()
+  })
+
+  it('email fixo revela o campo de e-mail; cliente esconde', () => {
+    const onUpdate = vi.fn()
+    const { rerender } = render(
+      <FlowPropertyPanel selectedNode={flowNode('email')} onUpdateNode={onUpdate} onClose={vi.fn()} />,
+    )
+    expect(screen.queryByPlaceholderText('time@exemplo.com')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Fixo' }))
+    expect(onUpdate).toHaveBeenCalledWith('node-1', { toMode: 'fixed' })
+
+    rerender(
+      <FlowPropertyPanel selectedNode={flowNode('email', { toMode: 'fixed' })} onUpdateNode={onUpdate} onClose={vi.fn()} />,
+    )
+    expect(screen.getByPlaceholderText('time@exemplo.com')).toBeInTheDocument()
+    expect(screen.getByRole('spinbutton', { name: 'Atraso em minutos' })).toBeInTheDocument()
+  })
+
+  it('webhook POST mostra corpo e esconde query params', () => {
+    render(
+      <FlowPropertyPanel selectedNode={flowNode('webhook', { method: 'POST' })} onUpdateNode={vi.fn()} onClose={vi.fn()} />,
+    )
+    expect(screen.getByLabelText('Corpo JSON')).toBeInTheDocument()
+    expect(screen.queryByText('Query params')).not.toBeInTheDocument()
+  })
+
+  it('webhook GET mostra query params e esconde o corpo', () => {
+    render(
+      <FlowPropertyPanel selectedNode={flowNode('webhook', { method: 'GET' })} onUpdateNode={vi.fn()} onClose={vi.fn()} />,
+    )
+    expect(screen.getByText('Query params')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Corpo JSON')).not.toBeInTheDocument()
+    expect(screen.getByText(/não envia corpo/)).toBeInTheDocument()
+  })
+
+  it('webhook avisa URL sem https e JSON inválido', () => {
+    render(
+      <FlowPropertyPanel
+        selectedNode={flowNode('webhook', { method: 'POST', url: 'http://inseguro.com', body: '{invalido' })}
+        onUpdateNode={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    )
+    expect(screen.getByText(/precisa começar com https/)).toBeInTheDocument()
+    expect(screen.getByText(/JSON inválido/)).toBeInTheDocument()
+  })
+
+  it('webhook permite adicionar headers', () => {
+    const onUpdate = vi.fn()
+    render(
+      <FlowPropertyPanel
+        selectedNode={flowNode('webhook', { method: 'POST', headers: [] })}
+        onUpdateNode={onUpdate}
+        onClose={vi.fn()}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: '+ Adicionar header' }))
+    expect(onUpdate).toHaveBeenCalledWith('node-1', { headers: [{ key: '', value: '' }] })
   })
 })

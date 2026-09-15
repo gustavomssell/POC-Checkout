@@ -12,6 +12,7 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { nodeTypes } from './nodes'
+import { flowEdgeTypes } from './flow-edges'
 import { FLOW_NODE_TYPES } from '@/lib/constants'
 import type { FlowNode, FlowEdge } from '@/types/flow'
 
@@ -23,7 +24,10 @@ interface FlowEditorProps {
   onNodesChange: OnNodesChange<FlowNode>
   onEdgesChange: OnEdgesChange
   onConnect: (connection: Connection) => void
+  /** Clique simples: só seleciona (destaque + excluir). */
   onNodeSelect: (id: string | null) => void
+  /** Duplo clique: abre o modal de propriedades. */
+  onNodeEdit: (id: string) => void
   onDropNode: (type: string, position: { x: number; y: number }) => void
 }
 
@@ -34,6 +38,7 @@ export function FlowEditor({
   onEdgesChange,
   onConnect,
   onNodeSelect,
+  onNodeEdit,
   onDropNode,
 }: FlowEditorProps) {
   const { screenToFlowPosition } = useReactFlow()
@@ -43,6 +48,13 @@ export function FlowEditor({
       onNodeSelect(node.id)
     },
     [onNodeSelect]
+  )
+
+  const onNodeDoubleClick = useCallback(
+    (_: React.MouseEvent, node: FlowNode) => {
+      onNodeEdit(node.id)
+    },
+    [onNodeEdit]
   )
 
   const onPaneClick = useCallback(
@@ -73,6 +85,7 @@ export function FlowEditor({
   )
 
   const nodeTypesConfig = useMemo(() => nodeTypes, [])
+  const edgeTypesConfig = useMemo(() => flowEdgeTypes, [])
 
   return (
     <div className="h-full w-full">
@@ -83,22 +96,25 @@ export function FlowEditor({
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onNodeClick={onNodeClick}
+        onNodeDoubleClick={onNodeDoubleClick}
         onPaneClick={onPaneClick}
         onDrop={onDrop}
         onDragOver={onDragOver}
         nodeTypes={nodeTypesConfig}
+        edgeTypes={edgeTypesConfig}
         fitView
         className="bg-background"
+        defaultEdgeOptions={{ type: 'deletable', animated: true, style: { stroke: '#01b274', strokeWidth: 2 } }}
       >
-        <Controls className="!bg-card !border !rounded-lg !shadow-lg" />
+        <Controls className="flow-controls" />
         <MiniMap
-          className="!bg-card !border !rounded-lg !shadow-lg"
+          className="flow-minimap"
           nodeColor={(node) => {
             const typeConfig = FLOW_NODE_TYPES.find((t) => t.type === node.type)
             return typeConfig?.color || '#94a3b8'
           }}
         />
-        <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="currentColor" className="!text-muted-foreground/30" />
+        <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="currentColor" className="!text-[#01b274]/25 dark:!text-[#00ffa7]/15" />
       </ReactFlow>
     </div>
   )
