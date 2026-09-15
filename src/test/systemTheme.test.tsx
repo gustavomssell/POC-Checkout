@@ -29,7 +29,7 @@ vi.stubGlobal('matchMedia', (query: string) => ({
 describe('System theme: editor chrome respeita claro/escuro', () => {
   beforeEach(resetStore)
 
-  it('root e header usam tokens no claro e Cakto dark no escuro', () => {
+  it('root e header usam tokens no claro e visual escuro no dark', () => {
     const { container } = render(
       <ThemeProvider>
         <ToastProvider>

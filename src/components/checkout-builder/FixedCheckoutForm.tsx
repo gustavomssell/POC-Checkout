@@ -236,21 +236,15 @@ export function FixedCheckoutForm({
 
       {/* Footer */}
       <div className="text-center space-y-3 pt-4">
-        <div className="flex items-center justify-center gap-1.5">
-          <div className="w-6 h-6 bg-emerald-600 rounded flex items-center justify-center">
-            <span className="text-white text-xs font-bold">C</span>
-          </div>
-          <span className="font-bold text-[var(--theme-primary-text)]">cakto</span>
-        </div>
         <p className="text-sm text-[var(--theme-secondary-text)]">
-          Cakto está processando este pagamento para o vendedor
+          Este pagamento está sendo processado de forma segura para o vendedor
         </p>
         <p className="text-sm text-[var(--theme-active-text)] flex items-center justify-center gap-1">
           <Check className="w-4 h-4" />
           Compra 100% segura
         </p>
         <p className="text-xs text-[var(--theme-secondary-text)]">
-          Este site é protegido pelo reCAPTCHA do Google
+          Este site é protegido por verificação de segurança
           <br />
           <a href="#" className="text-[var(--theme-active-text)] hover:underline">Política de privacidade</a> e{' '}
           <a href="#" className="text-[var(--theme-active-text)] hover:underline font-medium">Termos de serviço</a>

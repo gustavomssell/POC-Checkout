@@ -1,4 +1,4 @@
-import { HelpCircle } from 'lucide-react'
+import { HelpCircle, ShieldCheck } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 
 interface SecurePurchaseSidebarProps {
@@ -49,18 +49,18 @@ export function SecurePurchaseSidebar({
         <p className="text-sm text-[var(--theme-secondary-text)] mt-1">Renovação atual</p>
       </div>
 
-      {/* Cakto Branding */}
+      {/* Trust badges */}
       <div className="p-5 bg-[var(--theme-form-background)] text-center rounded-b-xl">
         <div className="flex items-center justify-center gap-1.5 mb-3">
           <div className="w-6 h-6 bg-[var(--theme-btn-selected-bg)] rounded flex items-center justify-center">
-            <span className="text-white text-xs font-bold">C</span>
+            <ShieldCheck className="w-4 h-4 text-white" />
           </div>
-          <span className="font-bold text-base text-[var(--theme-primary-text)]">cakto</span>
+          <span className="font-bold text-base text-[var(--theme-primary-text)]">Compra protegida</span>
         </div>
         <p className="text-xs text-[var(--theme-secondary-text)] leading-relaxed">
-          Cakto está processando este pagamento para o {sellerName}.
+          Este pagamento está sendo processado de forma segura para o {sellerName}.
           <br />
-          Este site é protegido pelo reCAPTCHA do Google
+          Este site é protegido por verificação de segurança
           <br />
           <a href="#" className="text-[var(--theme-active-text)] hover:underline">Política de privacidade</a> e{' '}
           <a href="#" className="text-[var(--theme-active-text)] hover:underline">Termos de serviço</a>
