@@ -193,6 +193,189 @@ describe('Grid cells', () => {
     expect(JSON.stringify(useCheckoutStore.getState().currentTemplate?.components)).toBe(before)
   })
 
+  it('removeComponentFromCell preserva os índices das demais células', () => {
+    setup()
+    const s = useCheckoutStore.getState()
+    s.addComponent('grid-2')
+    const [gridId] = ids()
+    s.addComponentToCell(gridId, 0, 'coupon')
+    s.addComponentToCell(gridId, 1, 'header')
+
+    useCheckoutStore.getState().removeComponentFromCell(gridId, 0)
+
+    const grid = useCheckoutStore.getState().currentTemplate?.components[0]
+    expect(grid?.children).toHaveLength(2)
+    expect(grid?.children?.[0]).toBeFalsy()
+    expect(grid?.children?.[1]?.type).toBe('header')
+  })
+
+  it('addComponentToCell em célula ocupada não sobrescreve', () => {
+    setup()
+    const s = useCheckoutStore.getState()
+    s.addComponent('grid-2')
+    const [gridId] = ids()
+    s.addComponentToCell(gridId, 0, 'coupon')
+
+    const added = useCheckoutStore.getState().addComponentToCell(gridId, 0, 'header')
+
+    expect(added).toBe(false)
+    const grid = useCheckoutStore.getState().currentTemplate?.components[0]
+    expect(grid?.children?.[0]?.type).toBe('coupon')
+  })
+
+  it('moveComponentToCell leva o objeto com props para a célula', () => {
+    setup()
+    const s = useCheckoutStore.getState()
+    s.addComponent('grid-2')
+    s.addComponent('coupon', 'below')
+    const [gridId, couponId] = ids()
+    useCheckoutStore.getState().updateComponent(couponId, { props: { label: 'MEU CUPOM' } })
+
+    const moved = useCheckoutStore.getState().moveComponentToCell(couponId, gridId, 1)
+
+    expect(moved).toBe(true)
+    const state = useCheckoutStore.getState()
+    expect(state.currentTemplate?.components).toHaveLength(1)
+    const grid = state.currentTemplate?.components[0]
+    expect(grid?.children?.[1]?.id).toBe(couponId)
+    expect(grid?.children?.[1]?.props).toMatchObject({ label: 'MEU CUPOM' })
+  })
+
+  it('moveComponentToCell em célula ocupada troca os lugares', () => {
+    setup()
+    const s = useCheckoutStore.getState()
+    s.addComponent('grid-2')
+    s.addComponent('coupon', 'below')
+    const [gridId, couponId] = ids()
+    s.addComponentToCell(gridId, 0, 'header')
+    const headerId = useCheckoutStore.getState().currentTemplate?.components[0].children?.[0]?.id
+
+    const moved = useCheckoutStore.getState().moveComponentToCell(couponId, gridId, 0)
+
+    expect(moved).toBe(true)
+    const comps = useCheckoutStore.getState().currentTemplate?.components || []
+    // Cupom foi para a célula; header assumiu o lugar no canvas
+    const grid = comps.find((c) => c.id === gridId)
+    expect(grid?.children?.[0]?.id).toBe(couponId)
+    expect(comps.map((c) => c.id)).toContain(headerId)
+    const backOnCanvas = comps.find((c) => c.id === headerId)
+    expect(backOnCanvas?.placement).toBe('below')
+  })
+
+  it('moveComponentToCell impede grid dentro de si mesmo', () => {
+    setup()
+    const s = useCheckoutStore.getState()
+    s.addComponent('grid-2')
+    const [gridId] = ids()
+
+    const moved = useCheckoutStore.getState().moveComponentToCell(gridId, gridId, 0)
+
+    expect(moved).toBe(false)
+    expect(useCheckoutStore.getState().currentTemplate?.components).toHaveLength(1)
+  })
+
+  it('moveCellComponent entre grids preserva o objeto', () => {
+    setup()
+    const s = useCheckoutStore.getState()
+    s.addComponent('grid-2')
+    s.addComponent('grid-2')
+    const [gridA, gridB] = ids()
+    s.addComponentToCell(gridA, 0, 'coupon')
+    const couponId = useCheckoutStore.getState().currentTemplate?.components[0].children?.[0]?.id
+    useCheckoutStore.getState().addComponentToCell(gridB, 1, 'header')
+
+    const moved = useCheckoutStore.getState().moveCellComponent(gridA, 0, gridB, 1)
+
+    expect(moved).toBe(true)
+    const comps = useCheckoutStore.getState().currentTemplate?.components || []
+    const a = comps.find((c) => c.id === gridA)
+    const b = comps.find((c) => c.id === gridB)
+    // Troca: cupom foi para B, header voltou para A
+    expect(b?.children?.[1]?.id).toBe(couponId)
+    expect(a?.children?.[0]?.type).toBe('header')
+  })
+
+  it('extractCellComponentToZone preserva props ao sair do grid', () => {
+    setup()
+    const s = useCheckoutStore.getState()
+    s.addComponent('grid-2')
+    const [gridId] = ids()
+    s.addComponentToCell(gridId, 0, 'coupon')
+
+    const extracted = useCheckoutStore.getState().extractCellComponentToZone(gridId, 0, 'above')
+
+    expect(extracted).toBe(true)
+    const comps = useCheckoutStore.getState().currentTemplate?.components || []
+    const grid = comps.find((c) => c.id === gridId)
+    expect(grid?.children?.[0]).toBeFalsy()
+    const out = comps.find((c) => c.type === 'coupon')
+    expect(out?.placement).toBe('above')
+  })
+
+  it('removeComponentDeep exclui item dentro de uma linha (grid)', () => {
+    setup()
+    const s = useCheckoutStore.getState()
+    s.addComponent('grid-2')
+    const [gridId] = ids()
+    s.addComponentToCell(gridId, 0, 'coupon')
+    const couponId = useCheckoutStore.getState().currentTemplate?.components[0].children?.[0]?.id
+
+    useCheckoutStore.getState().removeComponentDeep(couponId!)
+
+    const comps = useCheckoutStore.getState().currentTemplate?.components || []
+    const grid = comps.find((c) => c.id === gridId)
+    expect(grid).toBeTruthy()
+    expect(grid?.children?.filter(Boolean)).toHaveLength(0)
+  })
+
+  it('removeComponentDeep exclui item em grid aninhado e mantém o grid pai', () => {
+    setup()
+    const s = useCheckoutStore.getState()
+    s.addComponent('grid-2')
+    const [outerId] = ids()
+    s.addComponentToCell(outerId, 0, 'grid-1')
+    const innerId = useCheckoutStore.getState().currentTemplate?.components[0].children?.[0]?.id
+    s.addComponentToCell(innerId!, 0, 'coupon')
+    const deepId = useCheckoutStore.getState().currentTemplate?.components[0].children?.[0]?.children?.[0]?.id
+
+    useCheckoutStore.getState().removeComponentDeep(deepId!)
+
+    const comps = useCheckoutStore.getState().currentTemplate?.components || []
+    expect(comps.find((c) => c.id === outerId)).toBeTruthy()
+    const inner = comps.find((c) => c.id === outerId)?.children?.[0]
+    expect(inner?.type).toBe('grid-1')
+    expect(inner?.children?.filter(Boolean)).toHaveLength(0)
+  })
+
+  it('removeComponentDeep em top-level se comporta como removeComponent', () => {
+    setup()
+    const s = useCheckoutStore.getState()
+    s.addComponent('header')
+    s.addComponent('footer')
+    const [headerId, footerId] = ids()
+
+    useCheckoutStore.getState().removeComponentDeep(headerId)
+
+    const comps = useCheckoutStore.getState().currentTemplate?.components || []
+    expect(comps.map((c) => c.id)).toEqual([footerId])
+  })
+
+  it('duplicate preserva células vazias nas posições', () => {
+    setup()
+    const s = useCheckoutStore.getState()
+    s.addComponent('grid-2')
+    const [gridId] = ids()
+    s.addComponentToCell(gridId, 1, 'coupon')
+
+    useCheckoutStore.getState().duplicateComponent(gridId)
+
+    const comps = useCheckoutStore.getState().currentTemplate?.components || []
+    expect(comps).toHaveLength(2)
+    expect(comps[1].children?.[0]).toBeFalsy()
+    expect(comps[1].children?.[1]?.type).toBe('coupon')
+    expect(comps[1].children?.[1]?.id).not.toBe(comps[0].children?.[1]?.id)
+  })
+
   it('duplicate clona ids únicos em todos os níveis', () => {
     setup()
     const s = useCheckoutStore.getState()

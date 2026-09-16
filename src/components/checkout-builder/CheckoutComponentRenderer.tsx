@@ -1,17 +1,34 @@
-import type { CheckoutComponent, GridColumns } from '@/types/checkout'
+import { useState, useRef, useEffect } from 'react'
+import type { CheckoutComponent, GridChild, GridColumns } from '@/types/checkout'
 import { formatCurrency } from '@/lib/utils'
 import { Shield, Lock, RefreshCw, Sparkles, Columns2, Columns3, Columns4, Star, Clock, Check, ChevronDown, Play, Users, Tag, Plus, Trash2, Copy, Settings, GripVertical } from 'lucide-react'
 import { CHECKOUT_COMPONENTS } from '@/lib/constants'
 import { useDroppable, useDraggable } from '@dnd-kit/core'
+import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities'
+import type { DraggableAttributes } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 
 interface DraggableNestedProps {
   component: CheckoutComponent
   parentId: string
   cellIndex: number
+  isSelected?: boolean
+  onSelect?: (id: string) => void
+  onDelete?: (id: string) => void
+  onDuplicate?: (id: string) => void
+  onSettings?: (id: string) => void
 }
 
-function DraggableNestedComponent({ component, parentId, cellIndex }: DraggableNestedProps) {
+function DraggableNestedComponent({
+  component,
+  parentId,
+  cellIndex,
+  isSelected,
+  onSelect,
+  onDelete,
+  onDuplicate,
+  onSettings,
+}: DraggableNestedProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `nested-${parentId}-${cellIndex}-${component.id}`,
     data: {
@@ -37,7 +54,14 @@ function DraggableNestedComponent({ component, parentId, cellIndex }: DraggableN
       {...listeners}
       {...attributes}
     >
-      <CheckoutComponentRenderer component={component} />
+      <CheckoutComponentRenderer
+        component={component}
+        isSelected={isSelected}
+        onClick={() => onSelect?.(component.id)}
+        onDelete={() => onDelete?.(component.id)}
+        onDuplicate={() => onDuplicate?.(component.id)}
+        onSettings={() => onSettings?.(component.id)}
+      />
     </div>
   )
 }
@@ -69,6 +93,14 @@ interface CheckoutComponentRendererProps {
   onDuplicate?: () => void
   onSettings?: () => void
   onDropInGrid?: (gridId: string, column: number, component: CheckoutComponent) => void
+  /** Delegação para ações de itens aninhados (grid). */
+  onNestedSelect?: (id: string) => void
+  onNestedDelete?: (id: string) => void
+  onNestedDuplicate?: (id: string) => void
+  onNestedSettings?: (id: string) => void
+  /** Drag handle – passado pelo SortableItem para o botão de arrasto. */
+  dragListeners?: SyntheticListenerMap
+  dragAttributes?: DraggableAttributes
 }
 
 export function CheckoutComponentRenderer({
@@ -79,13 +111,32 @@ export function CheckoutComponentRenderer({
   onDelete,
   onDuplicate,
   onSettings,
+  onNestedSelect,
+  onNestedDelete,
+  onNestedDuplicate,
+  onNestedSettings,
+  dragListeners,
+  dragAttributes,
 }: CheckoutComponentRendererProps) {
   const { type, props } = component
   const componentConfig = CHECKOUT_COMPONENTS.find((c) => c.type === type)
   const fullWidth = component.fullWidth !== false
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const deleteRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!showDeleteConfirm) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (deleteRef.current && !deleteRef.current.contains(e.target as Node)) {
+        setShowDeleteConfirm(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showDeleteConfirm])
 
   const wrapperClass = `
-    relative group border-2 transition-all cursor-pointer
+    relative group border-2 transition-all
     ${fullWidth ? '' : 'max-w-md mx-auto'}
     ${isDropTarget
       ? 'border-dashed border-emerald-500 bg-emerald-500/5'
@@ -109,9 +160,10 @@ export function CheckoutComponentRenderer({
         ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
       `}>
         <button
-          className="p-1 hover:bg-emerald-700 rounded text-white transition-colors"
+          className="p-1 hover:bg-emerald-700 rounded text-white transition-colors cursor-grab active:cursor-grabbing"
           title="Mover"
-          onClick={(e) => { e.stopPropagation() }}
+          {...dragListeners}
+          {...dragAttributes}
         >
           <GripVertical className="w-3.5 h-3.5" />
         </button>
@@ -129,13 +181,34 @@ export function CheckoutComponentRenderer({
         >
           <Copy className="w-3.5 h-3.5" />
         </button>
-        <button
-          className="p-1 hover:bg-red-500/80 rounded text-white transition-colors"
-          title="Excluir"
-          onClick={(e) => { e.stopPropagation(); onDelete?.() }}
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
+        <div className="relative" ref={deleteRef}>
+          <button
+            className="p-1 hover:bg-red-500/80 rounded text-white transition-colors"
+            title="Excluir"
+            onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm((v) => !v) }}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+          {showDeleteConfirm && (
+            <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-3 z-50 w-48">
+              <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">Excluir este componente?</p>
+              <div className="flex gap-2">
+                <button
+                  className="flex-1 px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(false); onDelete?.() }}
+                >
+                  Sim
+                </button>
+                <button
+                  className="flex-1 px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(false) }}
+                >
+                  Não
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
       {componentConfig && (
         <div className={`
@@ -153,7 +226,7 @@ export function CheckoutComponentRenderer({
   switch (type) {
     case 'header':
       return (
-        <div className={wrapperClass} onClick={onClick}>
+        <div className={wrapperClass}>
           <ActionBar />
           <HeaderComponent {...props} />
         </div>
@@ -161,7 +234,7 @@ export function CheckoutComponentRenderer({
 
     case 'product-card':
       return (
-        <div className={wrapperClass} onClick={onClick}>
+        <div className={wrapperClass}>
           <ActionBar />
           <ProductCardComponent {...props} />
         </div>
@@ -169,7 +242,7 @@ export function CheckoutComponentRenderer({
 
     case 'form-field':
       return (
-        <div className={wrapperClass} onClick={onClick}>
+        <div className={wrapperClass}>
           <ActionBar />
           <FormFieldComponent {...props} />
         </div>
@@ -177,7 +250,7 @@ export function CheckoutComponentRenderer({
 
     case 'payment-methods':
       return (
-        <div className={wrapperClass} onClick={onClick}>
+        <div className={wrapperClass}>
           <ActionBar />
           <PaymentMethodsComponent {...props} />
         </div>
@@ -185,7 +258,7 @@ export function CheckoutComponentRenderer({
 
     case 'order-summary':
       return (
-        <div className={wrapperClass} onClick={onClick}>
+        <div className={wrapperClass}>
           <ActionBar />
           <OrderSummaryComponent {...props} />
         </div>
@@ -193,7 +266,7 @@ export function CheckoutComponentRenderer({
 
     case 'upsell':
       return (
-        <div className={wrapperClass} onClick={onClick}>
+        <div className={wrapperClass}>
           <ActionBar />
           <UpsellComponent {...props} />
         </div>
@@ -201,7 +274,7 @@ export function CheckoutComponentRenderer({
 
     case 'guarantees':
       return (
-        <div className={wrapperClass} onClick={onClick}>
+        <div className={wrapperClass}>
           <ActionBar />
           <GuaranteesComponent {...props} />
         </div>
@@ -209,7 +282,7 @@ export function CheckoutComponentRenderer({
 
     case 'footer':
       return (
-        <div className={wrapperClass} onClick={onClick}>
+        <div className={wrapperClass}>
           <ActionBar />
           <FooterComponent {...props} />
         </div>
@@ -220,20 +293,24 @@ export function CheckoutComponentRenderer({
     case 'grid-3':
     case 'grid-4':
       return (
-        <div className={wrapperClass} onClick={onClick}>
+        <div className={wrapperClass}>
           <ActionBar />
           <GridComponent
             parentId={component.id}
             columns={component.gridColumns || (type === 'grid-1' ? 1 : type === 'grid-2' ? 2 : type === 'grid-3' ? 3 : 4)}
             children={component.children}
             gap={props.gap as number}
+            onNestedSelect={onNestedSelect}
+            onNestedDelete={onNestedDelete}
+            onNestedDuplicate={onNestedDuplicate}
+            onNestedSettings={onNestedSettings}
           />
         </div>
       )
 
     case 'testimonial':
       return (
-        <div className={wrapperClass} onClick={onClick}>
+        <div className={wrapperClass}>
           <ActionBar />
           <TestimonialComponent {...props} />
         </div>
@@ -241,7 +318,7 @@ export function CheckoutComponentRenderer({
 
     case 'countdown':
       return (
-        <div className={wrapperClass} onClick={onClick}>
+        <div className={wrapperClass}>
           <ActionBar />
           <CountdownComponent {...props} />
         </div>
@@ -249,7 +326,7 @@ export function CheckoutComponentRenderer({
 
     case 'benefits':
       return (
-        <div className={wrapperClass} onClick={onClick}>
+        <div className={wrapperClass}>
           <ActionBar />
           <BenefitsComponent {...props} />
         </div>
@@ -257,7 +334,7 @@ export function CheckoutComponentRenderer({
 
     case 'faq':
       return (
-        <div className={wrapperClass} onClick={onClick}>
+        <div className={wrapperClass}>
           <ActionBar />
           <FAQComponent {...props} />
         </div>
@@ -265,7 +342,7 @@ export function CheckoutComponentRenderer({
 
     case 'video':
       return (
-        <div className={wrapperClass} onClick={onClick}>
+        <div className={wrapperClass}>
           <ActionBar />
           <VideoComponent {...props} />
         </div>
@@ -273,7 +350,7 @@ export function CheckoutComponentRenderer({
 
     case 'social-proof':
       return (
-        <div className={wrapperClass} onClick={onClick}>
+        <div className={wrapperClass}>
           <ActionBar />
           <SocialProofComponent {...props} />
         </div>
@@ -281,7 +358,7 @@ export function CheckoutComponentRenderer({
 
     case 'coupon':
       return (
-        <div className={wrapperClass} onClick={onClick}>
+        <div className={wrapperClass}>
           <ActionBar />
           <CouponComponent {...props} />
         </div>
@@ -289,7 +366,7 @@ export function CheckoutComponentRenderer({
 
     case 'bump-offer':
       return (
-        <div className={wrapperClass} onClick={onClick}>
+        <div className={wrapperClass}>
           <ActionBar />
           <BumpOfferComponent {...props} />
         </div>
@@ -326,7 +403,25 @@ function DroppableCell({ id, index, children }: { id: string; index: number; chi
   )
 }
 
-function GridComponent({ parentId, columns, children, gap = 16 }: { parentId: string; columns: GridColumns; children?: CheckoutComponent[]; gap?: number }) {
+function GridComponent({
+  parentId,
+  columns,
+  children,
+  gap = 16,
+  onNestedSelect,
+  onNestedDelete,
+  onNestedDuplicate,
+  onNestedSettings,
+}: {
+  parentId: string
+  columns: GridColumns
+  children?: GridChild[]
+  gap?: number
+  onNestedSelect?: (id: string) => void
+  onNestedDelete?: (id: string) => void
+  onNestedDuplicate?: (id: string) => void
+  onNestedSettings?: (id: string) => void
+}) {
   const gridColsClass = {
     1: 'grid-cols-1',
     2: 'grid-cols-2',
@@ -341,9 +436,13 @@ function GridComponent({ parentId, columns, children, gap = 16 }: { parentId: st
           <DroppableCell key={i} id={`${parentId}-cell-${i}`} index={i}>
             {children && children[i] ? (
               <DraggableNestedComponent
-                component={children[i]}
+                component={children[i] as CheckoutComponent}
                 parentId={parentId}
                 cellIndex={i}
+                onSelect={onNestedSelect}
+                onDelete={onNestedDelete}
+                onDuplicate={onNestedDuplicate}
+                onSettings={onNestedSettings}
               />
             ) : null}
           </DroppableCell>

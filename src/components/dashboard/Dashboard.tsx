@@ -19,11 +19,26 @@ export function Dashboard({ onOpenCheckout, onOpenFlow }: DashboardProps) {
   const [newName, setNewName] = useState('')
   const [newDescription, setNewDescription] = useState('')
 
+  const resetForm = () => {
+    setNewName('')
+    setNewDescription('')
+  }
+
+  const handleOpenChange = (open: boolean) => {
+    // Fechou sem criar: descarta o rascunho para não vazar na próxima abertura.
+    if (!open) resetForm()
+    setIsDialogOpen(open)
+  }
+
+  const handleCancel = () => {
+    resetForm()
+    setIsDialogOpen(false)
+  }
+
   const handleCreate = () => {
     if (newName.trim()) {
       const id = createTemplate(newName, newDescription)
-      setNewName('')
-      setNewDescription('')
+      resetForm()
       setIsDialogOpen(false)
       onOpenCheckout(id)
     }
@@ -42,7 +57,7 @@ export function Dashboard({ onOpenCheckout, onOpenFlow }: DashboardProps) {
         <div className="flex-1" />
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog open={isDialogOpen} onOpenChange={handleOpenChange}>
             <DialogTrigger render={<Button />}>
               <Plus className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Novo Checkout</span>
@@ -77,7 +92,7 @@ export function Dashboard({ onOpenCheckout, onOpenFlow }: DashboardProps) {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                <Button variant="outline" onClick={handleCancel}>
                   Cancelar
                 </Button>
                 <Button onClick={handleCreate}>Criar</Button>

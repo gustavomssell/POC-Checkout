@@ -24,12 +24,18 @@ export type GridColumns = 1 | 2 | 3 | 4
 
 export type ComponentPlacement = 'above' | 'below' | 'sidebar'
 
+/**
+ * Célula vazia de grid. `children[i]` pode ser ausente (buraco esparso) ou
+ * `null` (após serializar o persist) — sempre tratar como "célula vazia".
+ */
+export type GridChild = CheckoutComponent | undefined | null
+
 export interface CheckoutComponent {
   id: string
   type: ComponentType
   props: Record<string, unknown>
   order: number
-  children?: CheckoutComponent[]
+  children?: GridChild[]
   gridColumns?: GridColumns
   /** Posição em relação ao formulário fixo do checkout. Ausente = 'below' (compatibilidade). */
   placement?: ComponentPlacement

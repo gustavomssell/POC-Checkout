@@ -13,6 +13,22 @@ const PLACEMENT_LABELS: Record<string, string> = {
   sidebar: 'Na lateral',
 }
 
+/** Busca componente por id em qualquer profundidade (inclui grids aninhados). */
+function findComponentDeep(
+  components: Array<CheckoutComponent | undefined | null>,
+  id: string,
+): CheckoutComponent | undefined {
+  for (const c of components) {
+    if (!c) continue
+    if (c.id === id) return c
+    if (c.children) {
+      const found = findComponentDeep(c.children, id)
+      if (found) return found
+    }
+  }
+  return undefined
+}
+
 interface PropertiesController {
   component: CheckoutComponent | undefined
   componentConfig: { name: string; description: string } | undefined
@@ -24,9 +40,11 @@ interface PropertiesController {
 }
 
 function usePropertiesController(): PropertiesController {
-  const { currentTemplate, selectedComponentId, updateComponent, selectComponent, removeComponent, duplicateComponent } = useCheckoutStore()
+  const { currentTemplate, selectedComponentId, updateComponent, selectComponent, removeComponentDeep, duplicateComponent } = useCheckoutStore()
 
-  const component = currentTemplate?.components.find((c) => c.id === selectedComponentId)
+  const component = currentTemplate?.components.some((c) => c.id === selectedComponentId)
+    ? currentTemplate.components.find((c) => c.id === selectedComponentId)
+    : findComponentDeep(currentTemplate?.components ?? [], selectedComponentId ?? '')
   const componentConfig = component
     ? CHECKOUT_COMPONENTS.find((c) => c.type === component.type)
     : undefined
@@ -40,7 +58,7 @@ function usePropertiesController(): PropertiesController {
 
   const handleDelete = () => {
     if (!component) return
-    removeComponent(component.id)
+    removeComponentDeep(component.id)
     selectComponent(null)
   }
 

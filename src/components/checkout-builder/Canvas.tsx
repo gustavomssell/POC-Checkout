@@ -1,4 +1,5 @@
 import { useDndContext, useDroppable } from '@dnd-kit/core'
+import { useCheckoutStore } from '@/stores/checkoutStore'
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -6,7 +7,6 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical } from 'lucide-react'
-import { useCheckoutStore } from '@/stores/checkoutStore'
 import { CheckoutComponentRenderer } from './CheckoutComponentRenderer'
 import { ThemeProvider } from './ThemeProvider'
 import { SecurePurchaseSidebar } from './SecurePurchaseSidebar'
@@ -20,7 +20,7 @@ interface SortableItemProps {
 }
 
 function SortableItem({ component, isSelected, onSelect }: SortableItemProps) {
-  const { removeComponent, duplicateComponent } = useCheckoutStore()
+  const { removeComponent, duplicateComponent, removeComponentDeep } = useCheckoutStore()
   const { over } = useDndContext()
   const isDropTarget = over?.id === component.id && !isSelected
 
@@ -49,8 +49,6 @@ function SortableItem({ component, isSelected, onSelect }: SortableItemProps) {
       ref={setNodeRef}
       style={style}
       className={`relative ${isDragging ? '' : ''}`}
-      {...attributes}
-      {...listeners}
     >
       <CheckoutComponentRenderer
         component={component}
@@ -59,6 +57,13 @@ function SortableItem({ component, isSelected, onSelect }: SortableItemProps) {
         onClick={() => onSelect(component.id)}
         onDelete={() => removeComponent(component.id)}
         onDuplicate={handleDuplicate}
+        onSettings={() => onSelect(component.id)}
+        onNestedSelect={onSelect}
+        onNestedDelete={removeComponentDeep}
+        onNestedDuplicate={duplicateComponent}
+        onNestedSettings={onSelect}
+        dragListeners={listeners}
+        dragAttributes={attributes}
       />
     </div>
   )

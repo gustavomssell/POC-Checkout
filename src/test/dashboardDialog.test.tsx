@@ -55,4 +55,21 @@ describe('Dashboard: dialog Criar checkout', () => {
     const { currentTemplate } = useCheckoutStore.getState()
     expect(currentTemplate?.name).toBe('Checkout de Teste')
   })
+
+  it('fechar sem criar descarta o rascunho (reabre vazio)', () => {
+    renderAt('/checkouts')
+
+    fireEvent.click(screen.getByRole('button', { name: /novo checkout/i }))
+    fireEvent.change(screen.getByLabelText('Nome'), { target: { value: 'Rascunho' } })
+    fireEvent.change(screen.getByLabelText('Descrição'), { target: { value: 'Não deve vazar' } })
+
+    // Fecha sem criar
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
+
+    // Reabre: campos vazios e nada criado
+    fireEvent.click(screen.getByRole('button', { name: /novo checkout/i }))
+    expect(screen.getByLabelText('Nome')).toHaveValue('')
+    expect(screen.getByLabelText('Descrição')).toHaveValue('')
+    expect(useCheckoutStore.getState().templates).toHaveLength(0)
+  })
 })

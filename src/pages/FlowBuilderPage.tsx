@@ -8,19 +8,20 @@ export function FlowBuilderPage() {
   const { checkoutId } = useParams<{ checkoutId: string }>()
   const navigate = useNavigate()
   const loadTemplate = useCheckoutStore((s) => s.loadTemplate)
-  const template = useCheckoutStore((s) =>
-    checkoutId ? s.templates.find((t) => t.id === checkoutId) : undefined,
+  const templateExists = useCheckoutStore((s) =>
+    checkoutId ? s.templates.some((t) => t.id === checkoutId) : false,
   )
+  const currentTemplateId = useCheckoutStore((s) => s.currentTemplate?.id)
 
   useEffect(() => {
-    if (template) {
-      loadTemplate(template.id)
+    if (checkoutId && currentTemplateId !== checkoutId) {
+      loadTemplate(checkoutId)
     }
-  }, [template, loadTemplate])
+  }, [checkoutId, currentTemplateId, loadTemplate])
 
-  if (!checkoutId || !template) {
+  if (!checkoutId || !templateExists) {
     return <Navigate to="/checkouts" replace />
   }
 
-  return <FlowBuilder onBack={() => navigate(`/checkouts/${template.id}`)} />
+  return <FlowBuilder onBack={() => navigate(`/checkouts/${checkoutId}`)} />
 }

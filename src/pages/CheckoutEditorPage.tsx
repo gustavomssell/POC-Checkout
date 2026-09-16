@@ -8,17 +8,21 @@ export function CheckoutEditorPage() {
   const { checkoutId } = useParams<{ checkoutId: string }>()
   const navigate = useNavigate()
   const loadTemplate = useCheckoutStore((s) => s.loadTemplate)
-  const template = useCheckoutStore((s) =>
-    checkoutId ? s.templates.find((t) => t.id === checkoutId) : undefined,
+  const templateExists = useCheckoutStore((s) =>
+    checkoutId ? s.templates.some((t) => t.id === checkoutId) : false,
   )
+  const currentTemplateId = useCheckoutStore((s) => s.currentTemplate?.id)
 
+  // Carrega só ao trocar de checkout. Depender do objeto `template` inteiro
+  // recarregava (e limpava `selectedComponentId`, fechando o modal de
+  // propriedades) a cada edição, pois `updateComponent` gera um novo objeto.
   useEffect(() => {
-    if (template) {
-      loadTemplate(template.id)
+    if (checkoutId && currentTemplateId !== checkoutId) {
+      loadTemplate(checkoutId)
     }
-  }, [template, loadTemplate])
+  }, [checkoutId, currentTemplateId, loadTemplate])
 
-  if (!checkoutId || !template) {
+  if (!checkoutId || !templateExists) {
     return <Navigate to="/checkouts" replace />
   }
 
