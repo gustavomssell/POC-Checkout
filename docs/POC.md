@@ -36,7 +36,7 @@ Clicar num componente abre `ComponentPropertiesDialog` (a paleta continua visív
 
 ## Flow builder
 
-Canvas React Flow com 7 nós (`start`, `checkout`, `upsell`, `thank-you`, `email`, `condition`, `webhook`), cada um com componente visual próprio, cor e handles (condição tem saídas `yes`/`no`). Estado único no componente pai via `useNodesState`/`useEdgesState`, então salvar nunca perde conexão. Nós entram por clique ou arrasto da paleta (`screenToFlowPosition`); Delete remove nó + arestas órfãs. Sem template, o builder cria um com o trio padrão. Cada tipo tem campos próprios no painel (assunto do e-mail, método do webhook em pílulas, expressão da condição, redirect do checkout).
+Canvas React Flow com 7 nós (`start`, `checkout`, `upsell`, `thank-you`, `email`, `condition`, `webhook`), cada um com componente visual próprio, cor e handles (condição tem saídas `yes`/`no`). Estado único no componente pai via `useNodesState`/`useEdgesState`, então salvar nunca perde conexão. Nós entram por arrasto da paleta (`screenToFlowPosition`); Delete remove nó + arestas órfãs. Sem template, o builder cria um com o trio padrão. Cada tipo tem campos próprios no painel (assunto do e-mail, método do webhook em pílulas, expressão da condição, redirect do checkout).
 
 ## Como se interligam
 

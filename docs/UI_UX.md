@@ -26,8 +26,7 @@ Referência: o construtor de checkout da Cakto. O objetivo nunca foi copiar pixe
 
 ## Acessibilidade
 
-- Drag-and-drop completo por teclado: paleta (Space + setas em passos de 25px), canvas (Space + setas entre posições), com coordenadas separadas por tipo de item.
-- `aria-live` anuncia cada drop ("solto sobre tal área").
+- Drag-and-drop completo por teclado: paleta (Space + setas em passos de 25px), canvas (Space + setas entre posições), com coordenadas separadas por tipo de item. Os anúncios para leitor de tela são os padrão do dnd-kit (em inglês) — não há live-region customizada em português.
 - Labels reais em todos os inputs, `aria-pressed` nos toggles, `aria-label` nos steppers, título acessível nos modais.
 - Foco visível e alvos de 32px+ nos controles densos.
 

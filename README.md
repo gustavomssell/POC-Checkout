@@ -13,7 +13,7 @@ Quem vende infoproduto troca faturamento na página de checkout. As plataformas 
 - **Preview fiel** — espelha o builder (form fixo + zonas + sidebar) em desktop e mobile (frame 375px)
 - **Dois níveis de tema** — tema do sistema (claro/escuro/sistema, cobre todo o app) e tema do checkout (cores, fonte e botões por template)
 - **Rotas reais** — `/checkouts`, `/checkouts/:id`, `/checkouts/:id/flow`, 404, deep-link com reload
-- **193 testes automatizados** (Vitest + Testing Library)
+- **247 testes automatizados** (Vitest + Testing Library)
 
 ## Stack
 
@@ -38,7 +38,7 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # tsc + build de produção
 npm run preview    # serve o build
-npm test           # suite completa (193 testes)
+npm test           # suite completa (247 testes)
 npm run test:watch # modo watch
 ```
 
@@ -57,7 +57,7 @@ src/
 ├── stores/               # checkoutStore, flowStore (persist)
 ├── types/                # checkout, flow
 ├── lib/                  # constants (catálogos), utils
-└── test/                 # 11 arquivos de teste
+└── test/                 # 14 arquivos de teste (+ setup)
 ```
 
 ## Documentação
