@@ -6,7 +6,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { CheckoutComponentRenderer } from './CheckoutComponentRenderer'
 import { ThemeProvider } from './ThemeProvider'
 import { SecurePurchaseSidebar } from './SecurePurchaseSidebar'
@@ -160,8 +160,11 @@ export function Canvas({ onComponentSelect }: CanvasProps) {
                           </div>
                         </SortableContext>
                       ) : (
-                        <div className="w-full border-2 border-dashed border-gray-200 rounded-xl p-4 text-center opacity-60">
-                          <p className="text-sm text-gray-400">
+                        <div className="w-full border-2 border-dashed border-gray-200 rounded-xl p-6 text-center transition-all duration-200 hover:border-emerald-300 hover:bg-emerald-500/5 group">
+                          <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 group-hover:text-emerald-500 transition-colors">
+                            <Plus className="w-5 h-5" />
+                          </div>
+                          <p className="text-sm text-gray-400 font-medium">
                             Arraste uma linha aqui para adicionar acima do checkout
                           </p>
                         </div>
@@ -200,9 +203,11 @@ export function Canvas({ onComponentSelect }: CanvasProps) {
                           </SortableContext>
                         </>
                       ) : (
-                        <div className="w-full border-2 border-dashed border-gray-200 rounded-xl p-8 text-center">
-                          <GripVertical className="w-8 h-8 mx-auto text-gray-300 mb-2" />
-                          <p className="text-sm text-gray-400">
+                        <div className="w-full border-2 border-dashed border-gray-200 rounded-xl p-8 text-center transition-all duration-200 hover:border-emerald-300 hover:bg-emerald-500/5 group">
+                          <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 group-hover:text-emerald-500 transition-colors">
+                            <Plus className="w-5 h-5" />
+                          </div>
+                          <p className="text-sm text-gray-400 font-medium">
                             Arraste componentes aqui para adicionar abaixo do checkout
                           </p>
                         </div>
@@ -240,8 +245,11 @@ export function Canvas({ onComponentSelect }: CanvasProps) {
                       </div>
                     </SortableContext>
                   ) : (
-                    <div className="w-full border-2 border-dashed border-gray-600 rounded-xl p-4 text-center opacity-60">
-                      <p className="text-sm text-gray-400">
+                    <div className="w-full border-2 border-dashed border-gray-600 rounded-xl p-6 text-center transition-all duration-200 hover:border-emerald-300 hover:bg-emerald-500/5 group">
+                      <div className="w-10 h-10 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 group-hover:text-emerald-500 transition-colors">
+                        <Plus className="w-5 h-5" />
+                      </div>
+                      <p className="text-sm text-gray-400 font-medium">
                         Arraste componentes aqui para adicionar na lateral
                       </p>
                     </div>

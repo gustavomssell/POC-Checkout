@@ -103,14 +103,19 @@ export function CheckoutRenderer({ components, background, theme, productName, m
 
 /** Aplica a largura configurada (faixa estreita centralizada ou total). */
 function PlacedComponent({ component }: { component: CheckoutComponent }) {
+  const wrap = (
+    <div className="animate-fade-in-up">
+      <ComponentRenderer component={component} />
+    </div>
+  )
   if (component.fullWidth === false) {
     return (
       <div className="max-w-md mx-auto">
-        <ComponentRenderer component={component} />
+        {wrap}
       </div>
     )
   }
-  return <ComponentRenderer component={component} />
+  return wrap
 }
 
 function ComponentRenderer({ component }: { component: CheckoutComponent }) {
@@ -200,10 +205,10 @@ function ProductCardPreview(props: Record<string, unknown>) {
   const imageUrl = props.imageUrl as string
 
   return (
-    <div className="bg-card p-4 border-b">
+    <div className="bg-card p-4 border-b checkout-item-hover">
       <div className="max-w-3xl mx-auto">
-        <div className="flex gap-4">
-          <div className="w-24 h-24 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+        <div className="flex gap-4 items-start">
+          <div className="w-24 h-24 bg-muted rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden transition-all duration-300 group-hover:scale-105">
             {imageUrl ? (
               <img src={imageUrl} alt={name} className="w-full h-full object-cover rounded-lg" />
             ) : (
@@ -366,7 +371,7 @@ function UpsellPreview(props: Record<string, unknown>) {
   const buttonText = props.buttonText as string
 
   return (
-    <div className="bg-gradient-to-br from-primary/5 to-primary/10 p-4 border-b border-dashed border-primary/30">
+    <div className="bg-gradient-to-br from-primary/5 to-primary/10 p-4 border-b border-dashed border-primary/30 checkout-item-hover transition-all duration-200 hover:shadow-lg">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center gap-2 mb-3">
           <Sparkles className="w-5 h-5 text-primary" />
@@ -384,7 +389,7 @@ function UpsellPreview(props: Record<string, unknown>) {
             {formatCurrency(price || 0)}
           </span>
         </div>
-        <button className="w-full h-12 bg-primary text-primary-foreground rounded-xl font-semibold mt-4 hover:bg-primary/90 transition-colors">
+        <button className="w-full h-12 bg-primary text-primary-foreground rounded-xl font-semibold mt-4 transition-all duration-200 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98]">
           {buttonText || 'Adicionar'}
         </button>
       </div>

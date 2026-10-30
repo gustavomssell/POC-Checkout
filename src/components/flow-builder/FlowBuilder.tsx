@@ -16,6 +16,7 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 import { useFlowStore } from '@/stores/flowStore'
 import { useCheckoutStore } from '@/stores/checkoutStore'
 import { useToast } from '@/components/ui/toast'
+import { generateId } from '@/lib/utils'
 import { DEFAULT_FLOW_EDGES, DEFAULT_FLOW_NODES, FLOW_NODE_DEFAULT_DATA, FLOW_NODE_TYPES } from '@/lib/constants'
 import type { FlowNode, FlowEdge, FlowNodeType } from '@/types/flow'
 
@@ -74,7 +75,7 @@ function FlowBuilderContent({ onBack }: FlowBuilderProps) {
       : 'checkout'
     const nodeConfig = FLOW_NODE_TYPES.find((t) => t.type === validType)
     const newNode: FlowNode = {
-      id: `${type}-${Date.now()}`,
+      id: `${validType}-${generateId()}`,
       type: validType,
       position: position ?? { x: 250, y: nodes.length * 130 + 50 },
       data: {
@@ -124,20 +125,20 @@ function FlowBuilderContent({ onBack }: FlowBuilderProps) {
     <div className="flow-builder h-screen flex flex-col bg-background">
       {/* Header */}
       <header className="h-14 border-b border-border bg-card flex items-center px-4 gap-4 sticky top-0 z-40">
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onBack}>
+        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted transition-colors" onClick={onBack}>
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <Separator orientation="vertical" className="h-6" />
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 hidden md:flex"
+          className="h-8 w-8 hidden md:flex hover:bg-muted transition-colors"
           onClick={() => setIsPaletteOpen(!isPaletteOpen)}
         >
           {isPaletteOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeft className="w-4 h-4" />}
         </Button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-sm font-semibold tracking-tight">Flow Builder</h1>
+          <h1 className="text-sm font-semibold tracking-tight text-foreground">Flow Builder</h1>
           <p className="text-xs text-muted-foreground">
             Configure o fluxo do checkout e pós-checkout
           </p>
@@ -145,18 +146,18 @@ function FlowBuilderContent({ onBack }: FlowBuilderProps) {
         <div className="flex items-center gap-2">
           <ThemeToggle />
           {selectedNode && (
-            <Button variant="destructive" size="sm" onClick={handleDeleteNode}>
-              <Trash2 className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Excluir</span>
+            <Button variant="destructive" size="sm" onClick={handleDeleteNode} className="hover:bg-destructive/10 transition-colors">
+              <Trash2 className="w-4 h-4 mr-1.5" />
+              <span className="hidden sm:inline">Excluir nó</span>
             </Button>
           )}
           <Button
             size="sm"
             onClick={handleSave}
-            className="bg-[#00ffa7] text-[#0a1110] font-semibold hover:bg-[#01b274] hover:text-white shadow-node"
+            className="bg-[#00ffa7] text-[#0a1110] font-semibold hover:bg-[#01b274] hover:text-white shadow-node shadow-lg hover:shadow-evo transition-all duration-200 active:scale-[0.98] flex items-center gap-2 px-3"
           >
-            <Save className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Salvar</span>
+            <Save className="w-4 h-4" />
+            <span className="hidden sm:inline">Salvar Flow</span>
           </Button>
         </div>
       </header>

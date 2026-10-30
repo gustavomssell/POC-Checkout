@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { formatCurrency } from '@/lib/utils'
-import { Shield, CreditCard, Check, Barcode } from 'lucide-react'
+import { Shield, ShieldCheck, CreditCard, Barcode, ArrowRight } from 'lucide-react'
 
 interface FixedCheckoutFormProps {
   productName?: string
@@ -121,14 +121,14 @@ export function FixedCheckoutForm({
               <button
                 key={method.id}
                 onClick={() => setSelectedPayment(method.id)}
-                className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center gap-2 transition-all ${
+                className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-200 active:scale-95 ${
                   selected
-                    ? 'border-[var(--theme-active-text)] bg-[var(--theme-btn-selected-bg)]'
-                    : 'border-gray-200 hover:border-gray-300 bg-[var(--theme-btn-unselected-bg)]'
+                    ? 'border-[var(--theme-active-text)] bg-[var(--theme-btn-selected-bg)] shadow-[0_0_0_2px_rgba(var(--theme-active-text-rgb,16,185,129),0.2)]'
+                    : 'border-gray-200 hover:border-gray-300 hover:shadow-sm bg-[var(--theme-btn-unselected-bg)]'
                 }`}
               >
                 <span className="text-2xl">{method.icon}</span>
-                <span className={`text-xs text-center ${selected ? 'text-[var(--theme-btn-selected-text)]' : 'text-[var(--theme-btn-unselected-text)]'}`}>{method.label}</span>
+                <span className={`text-xs text-center font-medium ${selected ? 'text-[var(--theme-btn-selected-text)]' : 'text-[var(--theme-btn-unselected-text)]'}`}>{method.label}</span>
               </button>
             )
           })}
@@ -144,14 +144,14 @@ export function FixedCheckoutForm({
               <button
                 key={method.id}
                 onClick={() => setSelectedPayment(method.id)}
-                className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center gap-2 transition-all ${
+                className={`p-4 border-2 rounded-xl flex flex-col items-center justify-center gap-2 transition-all duration-200 active:scale-95 ${
                   selected
-                    ? 'border-[var(--theme-active-text)] bg-[var(--theme-btn-selected-bg)]'
-                    : 'border-gray-200 hover:border-gray-300 bg-[var(--theme-btn-unselected-bg)]'
+                    ? 'border-[var(--theme-active-text)] bg-[var(--theme-btn-selected-bg)] shadow-[0_0_0_2px_rgba(var(--theme-active-text-rgb,16,185,129),0.2)]'
+                    : 'border-gray-200 hover:border-gray-300 hover:shadow-sm bg-[var(--theme-btn-unselected-bg)]'
                 }`}
               >
                 <span className="text-2xl">{method.icon}</span>
-                <span className={`text-xs text-center ${selected ? 'text-[var(--theme-btn-selected-text)]' : 'text-[var(--theme-btn-unselected-text)]'}`}>{method.label}</span>
+                <span className={`text-xs text-center font-medium ${selected ? 'text-[var(--theme-btn-selected-text)]' : 'text-[var(--theme-btn-unselected-text)]'}`}>{method.label}</span>
               </button>
             )
           })}
@@ -230,8 +230,9 @@ export function FixedCheckoutForm({
       </div>
 
       {/* Pay Button */}
-      <button className="w-full h-14 bg-[var(--theme-btn-selected-bg)] text-[var(--theme-btn-selected-text)] rounded-xl font-semibold text-lg transition-colors">
-        Pagar com Cartão de Crédito
+      <button className="w-full h-14 bg-[var(--theme-btn-selected-bg)] text-[var(--theme-btn-selected-text)] rounded-xl font-semibold text-lg transition-all duration-200 hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2">
+        <span>Pagar com Cartão de Crédito</span>
+        <ArrowRight className="w-4 h-4" />
       </button>
 
       {/* Footer */}
@@ -240,7 +241,7 @@ export function FixedCheckoutForm({
           Este pagamento está sendo processado de forma segura para o vendedor
         </p>
         <p className="text-sm text-[var(--theme-active-text)] flex items-center justify-center gap-1">
-          <Check className="w-4 h-4" />
+          <ShieldCheck className="w-4 h-4 animate-pulse-soft" />
           Compra 100% segura
         </p>
         <p className="text-xs text-[var(--theme-secondary-text)]">

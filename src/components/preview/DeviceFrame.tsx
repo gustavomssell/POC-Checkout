@@ -55,7 +55,7 @@ export function DeviceFrame({ mode, onModeChange, onClose, children }: DeviceFra
                 <div className="w-20 h-5 bg-black rounded-full" />
               </div>
             )}
-            <div className={`@container ${mode === 'mobile' ? 'h-[calc(100%-24px)] overflow-y-auto' : 'min-h-[600px]'}`}>
+            <div className={`${mode === 'mobile' ? 'h-[calc(100%-24px)] overflow-y-auto' : 'min-h-[600px]'}`}>
               {children}
             </div>
           </div>

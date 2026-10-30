@@ -136,31 +136,31 @@ export function CheckoutComponentRenderer({
   }, [showDeleteConfirm])
 
   const wrapperClass = `
-    relative group border-2 transition-all
+    relative group border-2 transition-all duration-200
     ${fullWidth ? '' : 'max-w-md mx-auto'}
     ${isDropTarget
       ? 'border-dashed border-emerald-500 bg-emerald-500/5'
       : isSelected
         ? 'border-emerald-500 shadow-[0_0_0_2px_rgba(16,185,129,0.2)]'
-        : 'border-transparent hover:border-emerald-300'
+        : 'border-transparent hover:border-emerald-300 hover:shadow-sm'
     }
   `
 
   const ActionBar = () => (
     <>
       {isDropTarget && (
-        <div className="absolute -top-3 left-2 z-10 bg-emerald-600 text-white text-[10px] font-medium px-2 py-0.5 rounded whitespace-nowrap">
+        <div className="absolute -top-3 left-2 z-10 bg-emerald-600 text-white text-[10px] font-medium px-2 py-0.5 rounded whitespace-nowrap shadow-sm">
           Soltar aqui
         </div>
       )}
       <div className={`
         absolute -top-3 right-2 flex items-center gap-1 z-10
-        bg-emerald-600 rounded-md px-1 py-0.5 shadow-lg
-        transition-opacity duration-150
-        ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
+        bg-emerald-600/90 backdrop-blur-sm rounded-md px-1 py-0.5 shadow-lg border border-emerald-500/30
+        transition-all duration-200
+        ${isSelected ? 'opacity-100 scale-100' : 'opacity-0 group-hover:opacity-100 scale-95'}
       `}>
         <button
-          className="p-1 hover:bg-emerald-700 rounded text-white transition-colors cursor-grab active:cursor-grabbing"
+          className="p-1 hover:bg-emerald-700/80 rounded text-white transition-colors cursor-grab active:cursor-grabbing active:scale-95"
           title="Mover"
           {...dragListeners}
           {...dragAttributes}
@@ -168,14 +168,14 @@ export function CheckoutComponentRenderer({
           <GripVertical className="w-3.5 h-3.5" />
         </button>
         <button
-          className="p-1 hover:bg-emerald-700 rounded text-white transition-colors"
+          className="p-1 hover:bg-emerald-700/80 rounded text-white transition-colors active:scale-95"
           title="Configurações"
           onClick={(e) => { e.stopPropagation(); onSettings?.() }}
         >
           <Settings className="w-3.5 h-3.5" />
         </button>
         <button
-          className="p-1 hover:bg-emerald-700 rounded text-white transition-colors"
+          className="p-1 hover:bg-emerald-700/80 rounded text-white transition-colors active:scale-95"
           title="Duplicar"
           onClick={(e) => { e.stopPropagation(); onDuplicate?.() }}
         >
@@ -183,24 +183,24 @@ export function CheckoutComponentRenderer({
         </button>
         <div className="relative" ref={deleteRef}>
           <button
-            className="p-1 hover:bg-red-500/80 rounded text-white transition-colors"
+            className="p-1 hover:bg-red-500/80 rounded text-white transition-colors active:scale-95"
             title="Excluir"
             onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm((v) => !v) }}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
           {showDeleteConfirm && (
-            <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-3 z-50 w-48">
+            <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-3 z-50 w-48 animate-fade-in-up">
               <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">Excluir este componente?</p>
               <div className="flex gap-2">
                 <button
-                  className="flex-1 px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                  className="flex-1 px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors active:scale-95"
                   onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(false); onDelete?.() }}
                 >
                   Sim
                 </button>
                 <button
-                  className="flex-1 px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  className="flex-1 px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors active:scale-95"
                   onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(false) }}
                 >
                   Não
@@ -213,9 +213,9 @@ export function CheckoutComponentRenderer({
       {componentConfig && (
         <div className={`
           absolute -bottom-5 left-2 z-10
-          bg-gray-800/90 text-white text-[10px] font-medium px-2 py-0.5 rounded
-          transition-opacity duration-150 whitespace-nowrap
-          ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
+          bg-gray-800/90 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-0.5 rounded
+          transition-all duration-200 whitespace-nowrap
+          ${isSelected ? 'opacity-100 scale-100' : 'opacity-0 group-hover:opacity-100 scale-95'}
         `}>
           {componentConfig.name}
         </div>
@@ -226,7 +226,7 @@ export function CheckoutComponentRenderer({
   switch (type) {
     case 'header':
       return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} onClick={onClick}>
           <ActionBar />
           <HeaderComponent {...props} />
         </div>
@@ -234,7 +234,7 @@ export function CheckoutComponentRenderer({
 
     case 'product-card':
       return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} onClick={onClick}>
           <ActionBar />
           <ProductCardComponent {...props} />
         </div>
@@ -242,7 +242,7 @@ export function CheckoutComponentRenderer({
 
     case 'form-field':
       return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} onClick={onClick}>
           <ActionBar />
           <FormFieldComponent {...props} />
         </div>
@@ -250,7 +250,7 @@ export function CheckoutComponentRenderer({
 
     case 'payment-methods':
       return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} onClick={onClick}>
           <ActionBar />
           <PaymentMethodsComponent {...props} />
         </div>
@@ -258,7 +258,7 @@ export function CheckoutComponentRenderer({
 
     case 'order-summary':
       return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} onClick={onClick}>
           <ActionBar />
           <OrderSummaryComponent {...props} />
         </div>
@@ -266,7 +266,7 @@ export function CheckoutComponentRenderer({
 
     case 'upsell':
       return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} onClick={onClick}>
           <ActionBar />
           <UpsellComponent {...props} />
         </div>
@@ -274,7 +274,7 @@ export function CheckoutComponentRenderer({
 
     case 'guarantees':
       return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} onClick={onClick}>
           <ActionBar />
           <GuaranteesComponent {...props} />
         </div>
@@ -282,7 +282,7 @@ export function CheckoutComponentRenderer({
 
     case 'footer':
       return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} onClick={onClick}>
           <ActionBar />
           <FooterComponent {...props} />
         </div>
@@ -293,7 +293,7 @@ export function CheckoutComponentRenderer({
     case 'grid-3':
     case 'grid-4':
       return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} onClick={onClick}>
           <ActionBar />
           <GridComponent
             parentId={component.id}
@@ -310,7 +310,7 @@ export function CheckoutComponentRenderer({
 
     case 'testimonial':
       return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} onClick={onClick}>
           <ActionBar />
           <TestimonialComponent {...props} />
         </div>
@@ -318,7 +318,7 @@ export function CheckoutComponentRenderer({
 
     case 'countdown':
       return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} onClick={onClick}>
           <ActionBar />
           <CountdownComponent {...props} />
         </div>
@@ -326,7 +326,7 @@ export function CheckoutComponentRenderer({
 
     case 'benefits':
       return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} onClick={onClick}>
           <ActionBar />
           <BenefitsComponent {...props} />
         </div>
@@ -334,7 +334,7 @@ export function CheckoutComponentRenderer({
 
     case 'faq':
       return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} onClick={onClick}>
           <ActionBar />
           <FAQComponent {...props} />
         </div>
@@ -342,7 +342,7 @@ export function CheckoutComponentRenderer({
 
     case 'video':
       return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} onClick={onClick}>
           <ActionBar />
           <VideoComponent {...props} />
         </div>
@@ -350,7 +350,7 @@ export function CheckoutComponentRenderer({
 
     case 'social-proof':
       return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} onClick={onClick}>
           <ActionBar />
           <SocialProofComponent {...props} />
         </div>
@@ -358,7 +358,7 @@ export function CheckoutComponentRenderer({
 
     case 'coupon':
       return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} onClick={onClick}>
           <ActionBar />
           <CouponComponent {...props} />
         </div>
@@ -366,7 +366,7 @@ export function CheckoutComponentRenderer({
 
     case 'bump-offer':
       return (
-        <div className={wrapperClass}>
+        <div className={wrapperClass} onClick={onClick}>
           <ActionBar />
           <BumpOfferComponent {...props} />
         </div>

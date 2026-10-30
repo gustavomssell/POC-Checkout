@@ -37,6 +37,7 @@ export function BackgroundRenderer({ background, children }: BackgroundRendererP
   const containerStyle: React.CSSProperties = {
     position: 'relative',
     minHeight: '100%',
+    overflow: 'hidden',
   }
 
   const overlayStyle: React.CSSProperties = {
@@ -57,7 +58,6 @@ export function BackgroundRenderer({ background, children }: BackgroundRendererP
 
     case 'gradient': {
       const dir = background.gradientDirection || 'to-b'
-      containerStyle.background = `linear-gradient(var(--gradient-dir, to bottom), ${background.gradientFrom || '#0f172a'}, ${background.gradientTo || '#1e293b'})`
       // Map direction to CSS
       const dirMap: Record<string, string> = {
         'to-r': 'to right',
@@ -71,14 +71,37 @@ export function BackgroundRenderer({ background, children }: BackgroundRendererP
 
     case 'image':
       if (background.imageUrl) {
-        containerStyle.backgroundImage = `url(${background.imageUrl})`
-        containerStyle.backgroundSize = 'cover'
-        containerStyle.backgroundPosition = 'center'
-        containerStyle.backgroundRepeat = 'no-repeat'
-        if (background.blur) {
-          containerStyle.filter = `blur(${background.blur}px)`
-          containerStyle.transform = 'scale(1.1)'
+        // Camada de fundo isolada: blur/scale só afetam a imagem, nunca o conteúdo
+        const bgLayerStyle: React.CSSProperties = {
+          position: 'absolute',
+          inset: 0,
+          zIndex: 0,
+          backgroundImage: `url(${background.imageUrl})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
         }
+        if (background.blur) {
+          bgLayerStyle.filter = `blur(${background.blur}px)`
+          bgLayerStyle.transform = 'scale(1.1)'
+        }
+        containerStyle.backgroundImage = undefined
+        return (
+          <div style={containerStyle}>
+            <div style={bgLayerStyle} />
+            {background.overlayOpacity && background.overlayOpacity > 0 && (
+              <div
+                style={{
+                  ...overlayStyle,
+                  backgroundColor: background.overlayColor || '#000000',
+                  opacity: background.overlayOpacity / 100,
+                  zIndex: 1,
+                }}
+              />
+            )}
+            <div style={{ ...contentStyle, zIndex: 2 }}>{children}</div>
+          </div>
+        )
       }
       break
 

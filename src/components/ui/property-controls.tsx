@@ -87,8 +87,8 @@ export function Segmented<T extends string>({ options, value, onChange, ariaLabe
     <div
       role="group"
       aria-label={ariaLabel}
-      className="grid gap-1 p-1 rounded-lg bg-muted"
-      style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+      className="inline-flex gap-1 p-1 rounded-lg bg-muted border border-border/50"
+      style={{ display: 'flex' }}
     >
       {options.map((option) => (
         <button
@@ -97,10 +97,10 @@ export function Segmented<T extends string>({ options, value, onChange, ariaLabe
           onClick={() => onChange(option.value)}
           aria-pressed={value === option.value}
           className={cn(
-            'px-2 py-1.5 rounded-md text-xs font-medium transition-colors truncate',
+            'flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-all duration-200 truncate',
             value === option.value
-              ? 'bg-card shadow text-foreground'
-              : 'text-muted-foreground hover:text-foreground',
+              ? 'bg-card shadow-sm text-foreground border border-transparent'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-transparent',
           )}
         >
           {option.label}
@@ -121,7 +121,7 @@ interface StarRatingProps {
 export function StarRating({ value, onChange }: StarRatingProps) {
   const current = Math.min(5, Math.max(1, Math.round(value) || 1))
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((star) => (
         <button
           key={star}
@@ -129,17 +129,15 @@ export function StarRating({ value, onChange }: StarRatingProps) {
           onClick={() => onChange(star)}
           title={`${star} estrela${star > 1 ? 's' : ''}`}
           aria-label={`${star} de 5 estrelas`}
-          className="p-0.5 rounded hover:scale-110 transition-transform"
+          className={cn(
+            'p-0.5 rounded-md transition-all duration-200 active:scale-90',
+            star <= current ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground hover:text-yellow-300',
+          )}
         >
-          <Star
-            className={cn(
-              'w-6 h-6',
-              star <= current ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground',
-            )}
-          />
+          <Star className="w-5 h-5" />
         </button>
       ))}
-      <span className="text-xs text-muted-foreground ml-1.5">{current}/5</span>
+      <span className="text-xs text-muted-foreground ml-1.5 font-medium">{current}/5</span>
     </div>
   )
 }

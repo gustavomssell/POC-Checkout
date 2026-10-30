@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, CreditCard, GitBranch, Calendar, Trash2, Edit, Zap } from 'lucide-react'
+import { Plus, CreditCard, GitBranch, Calendar, Trash2, Edit, Zap, Layers } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -105,38 +105,56 @@ export function Dashboard({ onOpenCheckout, onOpenFlow }: DashboardProps) {
       {/* Content */}
       <main className="max-w-6xl mx-auto p-4 md:p-6">
         {templates.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-              <CreditCard className="w-8 h-8 text-muted-foreground" />
+          <div className="text-center py-20">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-muted flex items-center justify-center shadow-lg">
+              <CreditCard className="w-10 h-10 text-muted-foreground" />
             </div>
-            <h2 className="text-xl font-semibold mb-2">Nenhum checkout criado</h2>
-            <p className="text-muted-foreground mb-6">
-              Crie seu primeiro checkout para começar
+            <h2 className="text-xl font-semibold text-foreground mb-2">Nenhum checkout criado</h2>
+            <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
+              Crie seu primeiro checkout para começar a vender online
             </p>
-            <Button onClick={() => setIsDialogOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
+            <Button
+              onClick={() => setIsDialogOpen(true)}
+              className="bg-primary text-primary-foreground px-6 py-2.5 text-sm font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200 active:scale-95 flex items-center gap-2 mx-auto"
+            >
+              <Plus className="w-4 h-4" />
               Criar Checkout
             </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {templates.map((template) => (
-              <Card key={template.id} className="hover:shadow-md transition-shadow bg-card">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">{template.name}</CardTitle>
-                  <CardDescription className="line-clamp-2">
-                    {template.description || 'Sem descrição'}
-                  </CardDescription>
+              <Card
+                key={template.id}
+                className="bg-card border border-border hover:border-primary/30 hover:shadow-xl transition-all duration-200 group cursor-pointer"
+                onClick={() => onOpenCheckout(template.id)}
+              >
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base font-semibold text-foreground truncate">
+                      {template.name}
+                    </CardTitle>
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary/20 transition-colors">
+                      <CreditCard className="w-5 h-5" />
+                    </div>
+                  </div>
+                  {template.description && (
+                    <CardDescription className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                      {template.description}
+                    </CardDescription>
+                  )}
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-4">
                   <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                    <div className="flex items-center gap-1">
-                      <CreditCard className="w-4 h-4" />
+                    <div className="flex items-center gap-1.5">
+                      <Layers className="w-4 h-4" />
                       <span>{template.components.length} componentes</span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5 ml-auto">
                       <Calendar className="w-4 h-4" />
-                      <span>{new Date(template.updatedAt).toLocaleDateString('pt-BR')}</span>
+                      <span className="text-sm">
+                        {new Date(template.updatedAt).toLocaleDateString('pt-BR')}
+                      </span>
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -144,25 +162,25 @@ export function Dashboard({ onOpenCheckout, onOpenFlow }: DashboardProps) {
                       variant="outline"
                       size="sm"
                       className="flex-1"
-                      onClick={() => onOpenCheckout(template.id)}
+                      onClick={(e) => { e.stopPropagation(); onOpenCheckout(template.id) }}
                     >
-                      <Edit className="w-4 h-4 mr-2" />
+                      <Edit className="w-4 h-4 mr-1.5" />
                       Editar
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       className="flex-1"
-                      onClick={() => onOpenFlow(template.id)}
+                      onClick={(e) => { e.stopPropagation(); onOpenFlow(template.id) }}
                     >
-                      <GitBranch className="w-4 h-4 mr-2" />
+                      <GitBranch className="w-4 h-4 mr-1.5" />
                       Flow
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="destructive"
                       size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                      onClick={() => deleteTemplate(template.id)}
+                      className="h-8 w-8 hover:text-destructive transition-colors"
+                      onClick={(e) => { e.stopPropagation(); deleteTemplate(template.id) }}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>

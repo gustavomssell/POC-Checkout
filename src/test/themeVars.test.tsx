@@ -49,7 +49,7 @@ describe('FixedCheckoutForm consome o tema', () => {
     const title = screen.getByText('Produto Exemplo', { selector: 'h2' })
     expect(title.getAttribute('class')).toContain('text-[var(--theme-primary-text)]')
 
-    const payButton = screen.getByText('Pagar com Cartão de Crédito')
+    const payButton = screen.getByRole('button', { name: /Pagar com Cartão/ })
     expect(payButton.getAttribute('class')).toContain('bg-[var(--theme-btn-selected-bg)]')
     expect(payButton.getAttribute('class')).toContain('text-[var(--theme-btn-selected-text)]')
 
